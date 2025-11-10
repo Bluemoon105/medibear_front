@@ -48,6 +48,7 @@ export default function ReportButtonGroup({ userId, onReport }: ReportButtonGrou
         style={{
           backgroundColor: loading === "daily" ? "#C4A484" : "#D2B48C",
           border: "none",
+          outline:"none",
           borderRadius: "20px",
           padding: "8px 18px",
           fontWeight: 600,
@@ -63,6 +64,7 @@ export default function ReportButtonGroup({ userId, onReport }: ReportButtonGrou
         style={{
           backgroundColor: loading === "weekly" ? "#9B7040" : "#B38252",
           border: "none",
+          outline:"none",
           borderRadius: "20px",
           padding: "8px 18px",
           fontWeight: 600,

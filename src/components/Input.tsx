@@ -17,7 +17,7 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
   const chunksRef = useRef<Blob[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // ✅ 자동 높이 조절
+  //자동 높이 조절
   useEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
@@ -26,7 +26,7 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
     }
   }, [text]);
 
-  // ✅ 파일 → Base64 변환
+  // 파일 → Base64 변환
   const toBase64 = (file: Blob) =>
     new Promise<string>((resolve) => {
       const reader = new FileReader();
@@ -34,7 +34,7 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
       reader.readAsDataURL(file);
     });
 
-  // ✅ 이미지 업로드
+  // 이미지 업로드
   const handleImageUpload = async (e: any) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -43,7 +43,7 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
     setText("");
   };
 
-  // ✅ 동영상 업로드
+  // 동영상 업로드
   const handleVideoUpload = async (e: any) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -52,7 +52,7 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
     setText("");
   };
 
-  // ✅ 웹캠 관련
+  // 웹캠 관련
   const startWebcam = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
     streamRef.current = stream;
@@ -88,7 +88,7 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
       recorderRef.current?.stop();
     });
 
-  // ✅ 전송 처리
+  // 전송 처리
   const handleSend = () => {
     if (!text.trim()) return;
     onSend({ text, base64Video: recordedVideoBase64 || null });
@@ -96,7 +96,7 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
     setRecordedVideoBase64(null);
   };
 
-  // ✅ Enter/Shift+Enter 동작
+  // Enter/Shift+Enter 동작
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -141,7 +141,7 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
           </select>
         )}
 
-        {/* ✅ textarea 입력창 (자동 높이 + shift+enter 줄바꿈) */}
+        {/* textarea 입력창 (자동 높이 + shift+enter 줄바꿈) */}
         <textarea
           ref={textareaRef}
           placeholder={
@@ -159,7 +159,7 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
             fontSize: 14,
             outline: "none",
             resize: "none",
-            overflow: "hidden", // ✅ 스크롤 없이 자동 높이 확장
+            overflow: "hidden", // 스크롤 없이 자동 높이 확장
             color: "#000",
           }}
           rows={1}
@@ -194,13 +194,14 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
         )}
       </div>
 
-      {/* ✅ 전송 버튼 */}
+      {/* 전송 버튼 */}
       <button
         onClick={handleSend}
         style={{
           backgroundColor: "#D2B48C",
           fontWeight: 600,
           border: "none",
+          outline:"none",
           width: "85px",
           height: "55px",
           borderRadius: "20px",

@@ -11,8 +11,8 @@ export default function Sidebar() {
     gap: 8,
     padding: "10px 12px",
     borderRadius: 8,
-    background: active ? "#B38252" : "transparent", // ✅ 활성화 색상
-    color: active ? "#FFF" : "#111",
+    background: active ? "#B38252" : "transparent",
+    color: "#000",
     textDecoration: "none",
     fontSize: 14,
     fontWeight: active ? 600 : 400,
@@ -46,14 +46,14 @@ export default function Sidebar() {
           MediBear
         </h3>
 
-        {/* ✅ 각 메뉴별 Link */}
+        {/* 각 메뉴별 Link */}
         <Link to="/exercise" style={navItemStyle(getActive("/exercise"))}>
           운동 챗봇
         </Link>
         <Link to="/sleepChat" style={navItemStyle(getActive("/sleepChat"))}>
           수면 챗봇
         </Link>
-        {/* ✅ 새로 추가된 “수면 분석” 메뉴 */}
+        {/* 새로 추가된 “수면 분석” 메뉴 */}
         <Link to="/sleepPredict" style={navItemStyle(getActive("/sleepPredict"))}>
           수면 분석
         </Link>
@@ -76,6 +76,8 @@ export default function Sidebar() {
           cursor: "pointer",
           fontWeight: 600,
           alignSelf: "center",
+          outline:"none",
+          border:"none",
         }}
       >
         로그아웃
