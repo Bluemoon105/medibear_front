@@ -1,6 +1,6 @@
 import Sidebar from "../components/Sidebar";
 import ChatMessageBubble from "../components/ChatMessageBubble";
-import InputBar from "../components/InputBar";
+import InputBar from "../components/Input";
 import { useState } from "react";
 
 export default function ExerciseChat() {
@@ -55,10 +55,9 @@ export default function ExerciseChat() {
               style={{
                 width: 420,
                 height: 120,
-                background: "#D9D9D9",
+                background: "#FAF3E0",
                 borderRadius: 22,
                 padding: 26,
-                color: "#555",
               }}
             >
               대화 내용
@@ -72,7 +71,7 @@ export default function ExerciseChat() {
 
         {/* 입력 바 */}
         <div style={{ marginTop: 20 }}>
-          <InputBar onSend={sendToServer} />
+          <InputBar variant="exercise" onSend={sendToServer} />
         </div>
       </main>
     </div>
