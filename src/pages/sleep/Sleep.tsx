@@ -1,7 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import axios from "../../config/setAxios"
-// import Sidebar from "../components/Sidebar";
 import InputBar from "../../components/Input";
 import ReportButtonGroup from "../../components/Sleep/ReportButton";
 import ChatMessageBubble from "../../components/ChatMessageBubble";
@@ -13,9 +12,9 @@ interface Message {
 
 export default function SleepChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
-  const userId = 1;
+  const userId = "user001";
   const [loading, setLoading] = useState(false);
-  const bottomRef = useRef<HTMLDivElement | null>(null); // ✅ 추가
+  const bottomRef = useRef<HTMLDivElement | null>(null); 
 
   // 메시지가 변경될 때마다 맨 아래로 자동 스크롤
   useEffect(() => {
@@ -73,19 +72,6 @@ export default function SleepChatPage() {
         color: "#000",
       }}
     >
-      {/* Sidebar */}
-      <aside
-        style={{
-          width: "180px",
-          minWidth: "180px",
-          borderRight: "1px solid #E5E5E5",
-          background: "#FFFFFF",
-          height: "100%",
-        }}
-      >
-        {/* <Sidebar /> */}
-      </aside>
-
       {/* 채팅 영역 */}
       <main
         style={{
@@ -99,9 +85,10 @@ export default function SleepChatPage() {
         {/* 대화 내용 */}
         <div
           style={{
-            width: "1027px",
+            width:"100%",
+            maxWidth: "1027px",
             flex: 1,
-            padding: "40px 0",
+            padding: "40px 16px",
             display: "flex",
             flexDirection: "column",
             gap: "12px",
@@ -125,12 +112,14 @@ export default function SleepChatPage() {
         {/* 하단: 리포트 버튼 + 인풋바 */}
         <div
           style={{
-            width: "1027px",
+            width: "100%",
+            maxWidth: "1027px",
             display: "flex",
             flexDirection: "column",
             alignItems: "stretch",
             padding: "0 0 20px",
             gap: "12px",
+            boxSizing:"border-box",
           }}
         >
           <ReportButtonGroup userId={userId} onReport={handleReport} />

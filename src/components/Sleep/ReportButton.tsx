@@ -3,7 +3,7 @@ import { useState } from "react";
 import { getDailyReport, getWeeklyReport } from "../../services/SleepServices/ReportServices";
 
 type ReportButtonGroupProps = {
-  userId: number;
+  userId: string;
   onReport: (type: "daily" | "weekly", content: string) => void;
 };
 

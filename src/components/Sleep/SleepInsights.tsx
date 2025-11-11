@@ -5,7 +5,7 @@ export default function SleepInsights() {
   const [fatigueScore, setFatigueScore] = useState<number | null>(null);
   const [conditionLevel, setConditionLevel] = useState<string>("");
   const [recommendedSleep, setRecommendedSleep] = useState<string>("예측 중...");
-  const userId = 1;
+  const userId ="user001";
 
   // 컨디션별 이모티콘 매핑
   const conditionEmoji: Record<string, string> = {
