@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Dumbbell, LogIn, User, Flame, Moon, BarChart3 } from "lucide-react";
+import { Dumbbell, LogIn, User, Flame, Moon, BarChart3, ClipboardList } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface HeaderProps {
@@ -80,6 +80,19 @@ const Header = ({ children }: HeaderProps) => {
                   strokeWidth={2}
                 />
                 <span className="is-drawer-close:hidden">칼로리</span>
+              </button>
+            </li>
+            <li>
+              <button
+                className="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+                data-tip="스트레스 관리"
+                onClick={() => navigate("/calorie")}
+              >
+                <ClipboardList
+                  className="inline-block size-4 my-1.5"
+                  strokeWidth={2}
+                />
+                <span className="is-drawer-close:hidden">스트레스 관리</span>
               </button>
             </li>
           </ul>
