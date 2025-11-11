@@ -9,10 +9,7 @@ import Login from "../pages/member/Login";
 import Register from "../pages/member/Register";
 import ExerciseChat from "../pages/ExerciseChat";
 import Sleep from "../pages/Sleep";
-import Mypage from "../pages/Mypage";
 import CaloriesPredict from "../pages/CaloriesPredict";
-import Login from "../pages/Login";
-import Register from "../pages/Register";
 import SleepPredict from "../pages/SleepPredict";
 
 
