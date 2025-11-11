@@ -26,18 +26,7 @@ export default function MyPage() {
         color: "#000",
       }}
     >
-      {/* 🧭 왼쪽 사이드바 */}
-      <div
-        style={{
-          width: "180px",
-          minWidth: "180px",
-          borderRight: "1px solid #E5E5E5",
-          background: "#FFFFFF",
-        }}
-      >
-        <Sidebar />
-      </div>
-
+      
       {/* 📊 메인 콘텐츠 */}
       <div
         style={{
