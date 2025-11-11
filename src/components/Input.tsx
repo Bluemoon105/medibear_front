@@ -17,7 +17,6 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
   const chunksRef = useRef<Blob[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  //자동 높이 조절
   useEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
@@ -26,7 +25,6 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
     }
   }, [text]);
 
-  // 파일 → Base64 변환
   const toBase64 = (file: Blob) =>
     new Promise<string>((resolve) => {
       const reader = new FileReader();
@@ -34,7 +32,6 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
       reader.readAsDataURL(file);
     });
 
-  // 이미지 업로드
   const handleImageUpload = async (e: any) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -43,7 +40,6 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
     setText("");
   };
 
-  // 동영상 업로드
   const handleVideoUpload = async (e: any) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -52,7 +48,6 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
     setText("");
   };
 
-  // 웹캠 관련
   const startWebcam = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
     streamRef.current = stream;
@@ -88,7 +83,6 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
       recorderRef.current?.stop();
     });
 
-  // 전송 처리
   const handleSend = () => {
     if (!text.trim()) return;
     onSend({ text, base64Video: recordedVideoBase64 || null });
@@ -96,7 +90,6 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
     setRecordedVideoBase64(null);
   };
 
-  // Enter/Shift+Enter 동작
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -107,21 +100,32 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
   return (
     <div
       style={{
-        width: "1027px",
-        minHeight: "100px",
+        width: "100%",
+        maxWidth: "1027px",
         border: "1px solid black",
         borderRadius: 20,
         background: "#FFF",
         display: "flex",
+        flexWrap: "wrap",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "10px 20px",
+        padding: "10px 16px",
         margin: "20px auto",
         boxSizing: "border-box",
+        gap: "10px",
       }}
     >
-      {/* 왼쪽 영역 */}
-      <div style={{ display: "flex", alignItems: "center", flex: 1, gap: 10 }}>
+      {/* 왼쪽 입력영역 */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          flex: 1,
+          gap: 10,
+          flexWrap: "wrap",
+          minWidth: "200px",
+        }}
+      >
         {variant === "exercise" && (
           <select
             value={mode}
@@ -132,6 +136,7 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
               border: "1px solid #ccc",
               background: "#FFF",
               color: "black",
+              fontSize: "clamp(12px, 1.8vw, 14px)",
             }}
           >
             <option value="text">텍스트만</option>
@@ -141,7 +146,6 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
           </select>
         )}
 
-        {/* textarea 입력창 (자동 높이 + shift+enter 줄바꿈) */}
         <textarea
           ref={textareaRef}
           placeholder={
@@ -154,26 +158,44 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
           onKeyDown={handleKeyDown}
           style={{
             flex: 1,
+            minWidth: "150px",
             border: "none",
             background: "transparent",
-            fontSize: 14,
+            fontSize: "clamp(13px, 2vw, 15px)",
             outline: "none",
             resize: "none",
-            overflow: "hidden", // 스크롤 없이 자동 높이 확장
+            overflow: "hidden",
             color: "#000",
+            lineHeight: 1.5,
           }}
           rows={1}
         />
 
-        {/* 이미지 / 비디오 업로드 / 웹캠 */}
         {mode === "image" && (
-          <input type="file" accept="image/*" onChange={handleImageUpload} />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+            style={{ maxWidth: "180px" }}
+          />
         )}
         {mode === "video" && (
-          <input type="file" accept="video/*" onChange={handleVideoUpload} />
+          <input
+            type="file"
+            accept="video/*"
+            onChange={handleVideoUpload}
+            style={{ maxWidth: "180px" }}
+          />
         )}
         {mode === "webcam" && (
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              flexWrap: "wrap",
+            }}
+          >
             <button onClick={startWebcam}>웹캠 켜기</button>
             <button onClick={startRecording}>녹화 시작</button>
             <button onClick={stopRecording}>녹화 종료</button>
@@ -184,8 +206,8 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
               muted
               playsInline
               style={{
-                width: 120,
-                height: 90,
+                width: "clamp(90px, 25vw, 150px)",
+                height: "clamp(60px, 18vw, 100px)",
                 background: "#000",
                 borderRadius: 8,
               }}
@@ -201,12 +223,14 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
           backgroundColor: "#D2B48C",
           fontWeight: 600,
           border: "none",
-          outline:"none",
-          width: "85px",
-          height: "55px",
-          borderRadius: "20px",
+          outline: "none",
+          width: "clamp(70px, 18vw, 90px)",
+          height: "clamp(45px, 12vw, 55px)",
+          borderRadius: 20,
           cursor: "pointer",
-          color: "#",
+          fontSize: "clamp(13px, 2vw, 15px)",
+          alignSelf: "center",
+          flexShrink: 0,
         }}
       >
         전송

@@ -18,7 +18,7 @@ interface SleepRecord {
 
 export default function SleepChart() {
   const [sleepData, setSleepData] = useState<SleepRecord[]>([]);
-  const userId = 1; // 나중에 로그인 유저 기반으로 바꿔도 됨
+  const userId = "user001"; // 나중에 로그인 유저 기반으로 바꿔도 됨
 
   useEffect(() => {
     const fetchSleepData = async () => {

@@ -1,22 +1,22 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import axios from "../../config/setAxios";
 
 interface FormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: Record<string, any>) => void;
 }
 
-export default function FormModal({ isOpen, onClose, onSubmit }: FormModalProps) {
+export default function FormModal({ isOpen, onClose }: FormModalProps) {
   const [formData, setFormData] = useState({
-    activityHours: "",
     sleepHours: "",
     caffeineMg: "",
     alcoholConsumption: "",
+    activityHours: "",
   });
   const modalRef = useRef<HTMLDivElement>(null);
 
-  // ESC 키로 닫기
+  // ESC 닫기
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -25,7 +25,7 @@ export default function FormModal({ isOpen, onClose, onSubmit }: FormModalProps)
     return () => window.removeEventListener("keydown", handleEsc);
   }, [onClose]);
 
-  //배경 클릭 닫기
+  // 배경 클릭 닫기
   const handleOutsideClick = (e: React.MouseEvent) => {
     if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
       onClose();
@@ -39,15 +39,58 @@ export default function FormModal({ isOpen, onClose, onSubmit }: FormModalProps)
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = () => {
-    onSubmit(formData);
-    setFormData({
-      activityHours: "",
-      sleepHours: "",
-      caffeineMg: "",
-      alcoholConsumption: "",
-    });
-    onClose();
+  // POST + 예측 API + 새로고침
+  const handleSubmit = async () => {
+    try {
+      const payload = {
+        userId: "user001",
+        sleepHours: parseFloat(formData.sleepHours) || 0,
+        caffeineMg: parseFloat(formData.caffeineMg) || 0,
+        alcoholConsumption: parseFloat(formData.alcoholConsumption) || 0,
+        physicalActivityHours: parseFloat(formData.activityHours) || 0,
+      };
+
+      console.log("📤 활동 데이터 전송:", payload);
+
+      // 1️⃣ 활동 데이터 저장
+      const res = await axios.post("/sleep/activities", payload, {
+        headers: { "Content-Type": "application/json" },
+      });
+      console.log("✅ 활동 데이터 저장 완료:", res.data);
+
+      // 2️⃣ 피로도 예측 호출
+      console.log("📡 피로도 예측 요청...");
+      const predict = await axios.post(
+        `/sleep/activities/predict-fatigue`,
+        null,
+        { params: { userId: 1 } }
+      );
+      console.log("✅ 피로도 예측 결과:", predict.data);
+
+      alert("오늘의 활동 데이터가 저장되고 피로도 예측이 완료되었습니다!");
+
+      // 입력 초기화
+      setFormData({
+        sleepHours: "",
+        caffeineMg: "",
+        alcoholConsumption: "",
+        activityHours: "",
+      });
+
+      onClose();
+
+      // ✅ SleepAnalysis 페이지 전체 새로고침
+      setTimeout(() => {
+        window.location.reload();
+      }, 300);
+    } catch (err: any) {
+      console.error("❌ 에러 발생:", err);
+      if (err.response?.status === 400) {
+        alert(err.response.data || "오늘은 이미 활동량이 등록되었습니다.");
+      } else {
+        alert("서버 오류가 발생했습니다.");
+      }
+    }
   };
 
   return (
@@ -72,13 +115,11 @@ export default function FormModal({ isOpen, onClose, onSubmit }: FormModalProps)
           width: "420px",
           padding: "32px",
           position: "relative",
-          animation: "fadeIn 0.2s ease-in-out",
           display: "flex",
           flexDirection: "column",
-          alignItems: "center", // 내부 콘텐츠 중앙 정렬
+          alignItems: "center",
         }}
       >
-        {/* 닫기 버튼 */}
         <button
           onClick={onClose}
           style={{
@@ -96,7 +137,6 @@ export default function FormModal({ isOpen, onClose, onSubmit }: FormModalProps)
           ×
         </button>
 
-        {/* 제목 */}
         <h2
           style={{
             textAlign: "center",
@@ -109,53 +149,25 @@ export default function FormModal({ isOpen, onClose, onSubmit }: FormModalProps)
           수면 및 활동 데이터 입력
         </h2>
 
-        {/* 중앙 정렬된 입력 필드 영역 */}
+        {/* 입력 필드 */}
         <div
           style={{
             display: "flex",
             flexDirection: "column",
             gap: "18px",
-            alignItems: "center", // 중앙 배치
-            width: "100%", // 전체 폭 맞추기
-            maxWidth: "320px", // 너무 넓지 않게 제한
+            alignItems: "center",
+            width: "100%",
+            maxWidth: "320px",
           }}
         >
-          <InputField
-            label="활동량 (시간)"
-            name="activityHours"
-            value={formData.activityHours}
-            onChange={handleChange}
-          />
-          <InputField
-            label="수면시간 (시간)"
-            name="sleepHours"
-            value={formData.sleepHours}
-            onChange={handleChange}
-          />
-          <InputField
-            label="카페인 섭취량 (mg)"
-            name="caffeineMg"
-            value={formData.caffeineMg}
-            onChange={handleChange}
-          />
-          <InputField
-            label="알코올 섭취량 (잔)"
-            name="alcoholConsumption"
-            value={formData.alcoholConsumption}
-            onChange={handleChange}
-          />
+          <InputField label="수면시간 (시간)" name="sleepHours" value={formData.sleepHours} onChange={handleChange} />
+          <InputField label="카페인 섭취량 (mg)" name="caffeineMg" value={formData.caffeineMg} onChange={handleChange} />
+          <InputField label="알코올 섭취량 (잔)" name="alcoholConsumption" value={formData.alcoholConsumption} onChange={handleChange} />
+          <InputField label="활동량 (시간)" name="activityHours" value={formData.activityHours} onChange={handleChange} />
         </div>
 
-        {/* 버튼 영역 */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginTop: "32px",
-            gap: "12px",
-            width: "100%",
-          }}
-        >
+        {/* 버튼 */}
+        <div style={{ display: "flex", justifyContent: "center", marginTop: "32px", gap: "12px", width: "100%" }}>
           <button
             onClick={onClose}
             style={{
@@ -164,7 +176,6 @@ export default function FormModal({ isOpen, onClose, onSubmit }: FormModalProps)
               background: "#ccc",
               color: "#333",
               border: "none",
-              outline: "none",
               fontWeight: 500,
               cursor: "pointer",
             }}
@@ -180,7 +191,6 @@ export default function FormModal({ isOpen, onClose, onSubmit }: FormModalProps)
               color: "#000",
               fontWeight: 600,
               border: "none",
-              outline:"none",
               cursor: "pointer",
             }}
           >
@@ -192,7 +202,7 @@ export default function FormModal({ isOpen, onClose, onSubmit }: FormModalProps)
   );
 }
 
-// ✅ 입력 필드
+// 입력 필드
 function InputField({
   label,
   name,
@@ -205,14 +215,7 @@ function InputField({
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) {
   return (
-    <div
-      style={{
-        width: "100%",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center", // 라벨과 인풋 중앙 정렬
-      }}
-    >
+    <div style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
       <label
         style={{
           display: "block",
@@ -242,11 +245,8 @@ function InputField({
           background: "#FFF",
           fontSize: "14px",
           color: "#333",
-          transition: "border-color 0.2s ease",
-          textAlign: "center", // ✅ 입력 텍스트도 중앙
+          textAlign: "center",
         }}
-        onFocus={(e) => (e.target.style.borderColor = "#B38252")}
-        onBlur={(e) => (e.target.style.borderColor = "#D2B48C")}
       />
     </div>
   );

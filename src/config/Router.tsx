@@ -8,7 +8,7 @@ import Login from "../pages/member/Login";
 import Register from "../pages/Register";
 import ExerciseChat from "../pages/exercise/ExerciseChat";
 import Sleep from "../pages/sleep/Sleep"
-import SleepPredict from "../pages/sleep/Sleep"
+import SleepPredict from "../pages/sleep/SleepPredict"
 
 const Router = () => {
 	return (

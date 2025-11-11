@@ -1,7 +1,6 @@
-import Sidebar from "../components/Sidebar";
-import SleepChart from "../components/Sleep/SleepChart";
-import SleepInsights from "../components/Sleep/SleepInsights";
-import FormModal from "../components/Sleep/FormModal";
+import SleepChart from "../../components/Sleep/SleepChart";
+import SleepInsights from "../../components/Sleep/SleepInsights";
+import FormModal from "../../components/Sleep/FormModal";
 import { useState } from "react";
 
 export default function SleepPredict() {
@@ -16,18 +15,6 @@ export default function SleepPredict() {
         color: "#2c2c2c",
       }}
     >
-      {/* 사이드바 */}
-      <div
-        style={{
-          width: "180px",
-          minWidth: "180px",
-          borderRight: "1px solid #E5E5E5",
-          background: "#FFFFFF",
-        }}
-      >
-        <Sidebar />
-      </div>
-
       {/* 메인 */}
       <div
         style={{
@@ -76,7 +63,7 @@ export default function SleepPredict() {
         <SleepInsights />
       </div>
 
-      <FormModal isOpen={open} onClose={() => setOpen(false)} onSubmit={() => {}} />
+      <FormModal isOpen={open} onClose={() => setOpen(false)} />
     </div>
   );
 }
