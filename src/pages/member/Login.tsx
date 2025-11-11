@@ -1,7 +1,8 @@
-
 import type { FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
+	const navigate = useNavigate();
 	const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 		// TODO: 로그인 API 연동
@@ -41,7 +42,7 @@ const Login = () => {
 					/>
 				</div>
 				<div className="flex flex-col">
-					<button type="submit" className="btn btn-primary w-full">
+					<button type="submit" className="btn btn-primary w-full" onClick={()=> navigate("/calorie")}>
 						로그인
 					</button>
 

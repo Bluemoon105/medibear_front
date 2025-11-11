@@ -1,10 +1,10 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import axios from "../config/setAxios";
-import Sidebar from "../components/Sidebar";
-import InputBar from "../components/Input";
-import ReportButtonGroup from "../components/Sleep/ReportButton";
-import ChatMessageBubble from "../components/ChatMessageBubble";
+import axios from "../../config/setAxios"
+// import Sidebar from "../components/Sidebar";
+import InputBar from "../../components/Input";
+import ReportButtonGroup from "../../components/Sleep/ReportButton";
+import ChatMessageBubble from "../../components/ChatMessageBubble";
 
 interface Message {
   role: "user" | "assistant";
@@ -83,7 +83,7 @@ export default function SleepChatPage() {
           height: "100%",
         }}
       >
-        <Sidebar />
+        {/* <Sidebar /> */}
       </aside>
 
       {/* 채팅 영역 */}

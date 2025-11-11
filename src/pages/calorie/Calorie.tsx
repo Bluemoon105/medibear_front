@@ -1,6 +1,6 @@
 import type { ChangeEvent, FormEvent } from "react";
 import { useMemo, useState } from "react";
-import axios from "../config/setAxios";
+import axios from "../../config/setAxios";
 
 
 type CalorieForm = {

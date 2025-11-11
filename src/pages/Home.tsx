@@ -2,9 +2,10 @@
 import { useSelector, useDispatch } from "react-redux";
 import { increment, decrement } from "../redux/slice/counterSlice";
 import type { AppDispatch, RootState } from "../redux/store";
-
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
+	const navigate = useNavigate();
 	// const [testWord, setTestWord] = useState<string | undefined>('');
 	const count = useSelector((state: RootState) => state.counter.value);
 	const dispatch = useDispatch<AppDispatch>();
@@ -36,6 +37,7 @@ const Home = () => {
 
 			<div className="bg-blue-300 text-white font-semibold mt-10 p-6 rounded-xl w-full max-w-[1200px] mx-auto">
 				화면 너비를 벗어나지 않는 가로 박스
+				<button className="btn btn-neutral" onClick={()=> navigate("login")}>로그인</button>
 			</div>
 
 

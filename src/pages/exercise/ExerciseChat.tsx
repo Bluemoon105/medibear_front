@@ -1,8 +1,8 @@
-import Sidebar from "../components/Sidebar";
-import ChatMessageBubble from "../components/ChatMessageBubble";
-import InputBar from "../components/Input";
+// import Sidebar from "../../components/Sidebar";
+import ChatMessageBubble from "../../components/ChatMessageBubble";
+import InputBar from "../../components/Input";
 import { useState } from "react";
-
+import axios from "../../config/setAxios"
 export default function ExerciseChat() {
   const [messages, setMessages] = useState<{ from: "user" | "ai"; text: string }[]>([]);
 
@@ -11,6 +11,8 @@ export default function ExerciseChat() {
     if (base64Image) payload.image = base64Image;
     if (base64Video) payload.video = base64Video;
 
+
+    
     const res = await fetch("http://localhost:5000/analyze_and_chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -29,7 +31,7 @@ export default function ExerciseChat() {
 
   return (
     <div style={{ display: "flex", height: "100vh", background: "#FFF" }}>
-      <Sidebar />
+      {/* <Sidebar /> */}
 
       <main
         style={{
