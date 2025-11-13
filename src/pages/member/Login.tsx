@@ -79,11 +79,7 @@ const Login = () => {
 					/>
 				</div>
 				<div className="flex flex-col">
-<<<<<<< HEAD
-					<button type="submit" className="btn btn-primary w-full">
-=======
 					<button type="submit" className="btn btn-primary w-full" onClick={()=> navigate("/exercise")}>
->>>>>>> main
 						로그인
 					</button>
 
