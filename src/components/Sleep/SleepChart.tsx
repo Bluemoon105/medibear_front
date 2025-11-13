@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "../../config/setAxios";
+// import axios from "../../config/setAxios";
 import {
   BarChart,
   Bar,
@@ -9,7 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import {autoRefreshCheck} from "../../utils/TokenUtils";
+import {autoRefreshCheck} from "../../utils/TokenUtils.js";
 
 interface SleepRecord {
   date: string;
