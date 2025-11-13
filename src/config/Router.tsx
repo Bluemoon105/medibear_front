@@ -9,6 +9,7 @@ import Register from "../pages/Register";
 import ExerciseChat from "../pages/exercise/ExerciseChat";
 import Sleep from "../pages/sleep/Sleep"
 import SleepPredict from "../pages/sleep/SleepPredict"
+import StressReportPage from "../pages/stress/StressReportPage";
 
 const Router = () => {
 	return (
@@ -21,6 +22,8 @@ const Router = () => {
 					<Route path="/sleepPredict" element={<SleepPredict />} />
 
 					<Route path="calorie" element={<Calorie/>}/>
+
+					<Route path="/stress" element={<StressReportPage />} />
 
 					<Route path="mypage" element={<Mypage/>}/>
 				</Route>
