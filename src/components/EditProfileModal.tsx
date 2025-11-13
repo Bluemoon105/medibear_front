@@ -7,7 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 interface EditProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
-  userId: string; // 이메일(아이디)
+  userId: string;
 }
 
 export default function EditProfileModal({ isOpen, onClose, userId }: EditProfileModalProps) {
@@ -27,111 +27,78 @@ export default function EditProfileModal({ isOpen, onClose, userId }: EditProfil
     return () => window.removeEventListener("keydown", handleEsc);
   }, [onClose]);
 
-  // 모달 외부 클릭 시 닫기
+  // 모달 바깥 클릭
   const handleOutsideClick = (e: React.MouseEvent) => {
-    if (modalRef.current && !modalRef.current.contains(e.target as Node)) onClose();
+    if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+      onClose();
+    }
   };
 
   if (!isOpen) return null;
 
-  // 입력값 변경 핸들러
+  // 입력값
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ✅ 비밀번호 변경 처리
+  // 비밀번호 변경
   const handleSubmit = async () => {
     if (!formData.password || !formData.newPassword) {
-      toast.warn("현재 비밀번호와 새 비밀번호를 모두 입력해주세요.", {
-        position: "top-center",
-        autoClose: 2000,
-        theme: "colored",
-      });
+      toast.warn("현재 비밀번호와 새 비밀번호를 입력해주세요.", { position: "top-center" });
       return;
     }
 
     try {
       setIsVerifying(true);
 
-      // 1️⃣ 현재 비밀번호 검증
       const verify = await axios.post("/users/verify-password", {
         email: userId,
         password: formData.password,
       });
 
       if (!verify.data?.valid) {
-        toast.error("현재 비밀번호가 올바르지 않습니다.", {
-          position: "top-center",
-          autoClose: 2000,
-          theme: "colored",
-        });
+        toast.error("현재 비밀번호가 올바르지 않습니다.", { position: "top-center" });
         setIsVerifying(false);
         return;
       }
 
-      // 2️⃣ 새 비밀번호 변경 요청
       await axios.put(`/users/${userId}/update`, {
         newPassword: formData.newPassword,
       });
 
       toast.success("비밀번호가 성공적으로 변경되었습니다.", {
         position: "top-center",
-        autoClose: 2200,
-        theme: "colored",
       });
 
       onClose();
       setTimeout(() => window.location.reload(), 700);
     } catch (err) {
-      console.error("❌ 비밀번호 변경 오류:", err);
-      toast.error("비밀번호 변경 중 오류가 발생했습니다.", {
-        position: "top-center",
-        autoClose: 2000,
-        theme: "colored",
-      });
+      toast.error("서버 오류가 발생했습니다.", { position: "top-center" });
     } finally {
       setIsVerifying(false);
     }
   };
 
-  // ✅ 커스텀 탈퇴 확인 Toast
+  // 회원 탈퇴 토스트
   const showDeleteConfirmToast = (onConfirm: () => void) => {
     toast(
       ({ closeToast }) => (
-        <div style={{ textAlign: "center" }}>
-          <p style={{ fontSize: "15px", marginBottom: "10px", color: "#333" }}>
-            정말 탈퇴하시겠어요?
-          </p>
-          <div style={{ display: "flex", justifyContent: "center", gap: "10px" }}>
+        <div className="text-center">
+          <p className="text-[15px] mb-3 text-[#333]">정말 탈퇴하시겠어요?</p>
+          <div className="flex justify-center gap-3">
             <button
               onClick={() => {
                 onConfirm();
                 closeToast();
               }}
-              style={{
-                background: "#B38252",
-                color: "#fff",
-                border: "none",
-                borderRadius: "8px",
-                padding: "6px 12px",
-                fontSize: "13px",
-                cursor: "pointer",
-              }}
+              className="bg-[#B38252] text-white px-3 py-1.5 rounded-md text-[13px]"
             >
               네, 탈퇴할래요
             </button>
             <button
               onClick={closeToast}
-              style={{
-                background: "#ccc",
-                color: "#333",
-                border: "none",
-                borderRadius: "8px",
-                padding: "6px 12px",
-                fontSize: "13px",
-                cursor: "pointer",
-              }}
+              className="bg-gray-300 text-[#333] px-3 py-1.5 rounded-md text-[13px]"
             >
               취소
             </button>
@@ -143,114 +110,56 @@ export default function EditProfileModal({ isOpen, onClose, userId }: EditProfil
         autoClose: false,
         closeOnClick: false,
         draggable: false,
-        theme: "light",
         style: {
           background: "#FAF3E0",
           border: "1px solid #D2B48C",
           borderRadius: "12px",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
         },
       }
     );
   };
 
-  // 🗑️ 회원 탈퇴 처리
+  // 회원 탈퇴 처리
   const handleDeleteAccount = () => {
     showDeleteConfirmToast(async () => {
       try {
         await axios.delete(`/users/${userId}`);
-        toast.success("회원 탈퇴가 완료되었습니다. 이용해주셔서 감사합니다.", {
-          position: "top-center",
-          autoClose: 2300,
-          theme: "colored",
-        });
+        toast.success("회원 탈퇴가 완료되었습니다.", { position: "top-center" });
         onClose();
-        setTimeout(() => {
-          window.location.href = "/";
-        }, 1000);
+        setTimeout(() => (window.location.href = "/"), 1000);
       } catch (err) {
-        console.error("회원 탈퇴 오류:", err);
-        toast.error("회원 탈퇴 중 오류가 발생했습니다.", {
-          position: "top-center",
-          autoClose: 2000,
-          theme: "colored",
-        });
+        toast.error("회원 탈퇴 중 오류가 발생했습니다.", { position: "top-center" });
       }
     });
   };
 
   return (
     <>
-      <ToastContainer style={{ zIndex: 11000}} />
+      <ToastContainer />
 
       <div
         onClick={handleOutsideClick}
-        style={{
-          position: "fixed",
-          inset: 0,
-          background: "rgba(0, 0, 0, 0.4)",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          zIndex: 9999,
-        }}
+        className="fixed inset-0 bg-black/40 flex justify-center items-center z-[9999]"
       >
         <div
           ref={modalRef}
-          style={{
-            background: "#FAF3E0",
-            borderRadius: 20,
-            boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
-            width: "420px",
-            padding: "32px",
-            position: "relative",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
+          className="bg-[#FAF3E0] rounded-2xl shadow-xl w-[420px] p-8 relative flex flex-col items-center"
         >
           {/* 닫기 버튼 */}
           <button
             onClick={onClose}
-            style={{
-              position: "absolute",
-              top: "10px",
-              right: "16px",
-              fontSize: "24px",
-              fontWeight: "bold",
-              color: "#B38252",
-              border: "none",
-              background: "transparent",
-              cursor: "pointer",
-            }}
+            className="absolute top-3 right-4 text-[#B38252] text-3xl font-bold"
           >
             ×
           </button>
 
           {/* 제목 */}
-          <h2
-            style={{
-              textAlign: "center",
-              fontSize: "20px",
-              fontWeight: 600,
-              color: "#B38252",
-              marginBottom: "24px",
-            }}
-          >
+          <h2 className="text-[20px] font-semibold text-[#B38252] mb-6">
             비밀번호 변경
           </h2>
 
-          {/* 입력 영역 */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "18px",
-              alignItems: "center",
-              width: "100%",
-              maxWidth: "320px",
-            }}
-          >
+          {/* 입력 필드 */}
+          <div className="flex flex-col gap-5 w-full max-w-[320px]">
             <ReadOnlyField label="이메일 (아이디)" value={userId} />
             <InputField
               label="현재 비밀번호"
@@ -268,63 +177,31 @@ export default function EditProfileModal({ isOpen, onClose, userId }: EditProfil
             />
           </div>
 
-          {/* 버튼 영역 */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: "10px",
-              marginTop: "32px",
-              width: "100%",
-            }}
-          >
-            {/* 취소 / 저장 버튼 */}
-            <div style={{ display: "flex", justifyContent: "center", gap: "12px" }}>
+          {/* 버튼 섹션 */}
+          <div className="flex flex-col items-center gap-3 mt-8 w-full">
+            <div className="flex gap-3">
               <button
                 onClick={onClose}
-                style={{
-                  padding: "10px 16px",
-                  borderRadius: 12,
-                  background: "#ccc",
-                  color: "#333",
-                  border: "none",
-                  fontWeight: 500,
-                  cursor: "pointer",
-                }}
+                className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg font-medium"
               >
                 취소
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={isVerifying}
-                style={{
-                  padding: "10px 16px",
-                  borderRadius: 12,
-                  background: isVerifying ? "#D2B48Caa" : "#D2B48C",
-                  color: "#000",
-                  fontWeight: 600,
-                  border: "none",
-                  cursor: isVerifying ? "not-allowed" : "pointer",
-                }}
+                className={`px-4 py-2 rounded-lg font-semibold ${
+                  isVerifying
+                    ? "bg-[#D2B48C]/60 cursor-not-allowed"
+                    : "bg-[#D2B48C] text-black"
+                }`}
               >
                 {isVerifying ? "변경 중..." : "저장"}
               </button>
             </div>
 
-            {/* 회원 탈퇴 버튼 */}
             <button
               onClick={handleDeleteAccount}
-              style={{
-                marginTop: "12px",
-                background: "transparent",
-                border: "none",
-                color: "#b45a5a",
-                fontSize: "13px",
-                fontWeight: 500,
-                cursor: "pointer",
-                textDecoration: "underline",
-              }}
+              className="text-[13px] text-red-600 underline mt-2"
             >
               회원 탈퇴
             </button>
@@ -335,15 +212,14 @@ export default function EditProfileModal({ isOpen, onClose, userId }: EditProfil
   );
 }
 
-/* ---------- 하위 공용 컴포넌트 ---------- */
+/* --------------------- 하위 공용 컴포넌트 --------------------- */
 
-// 입력 필드
 function InputField({
   label,
   name,
   value,
-  onChange,
   type = "text",
+  onChange,
 }: {
   label: string;
   name: string;
@@ -352,70 +228,27 @@ function InputField({
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) {
   return (
-    <div style={{ width: "100%", textAlign: "center" }}>
-      <label
-        style={{
-          display: "block",
-          fontSize: "14px",
-          fontWeight: 500,
-          color: "#B38252",
-          marginBottom: "6px",
-        }}
-      >
-        {label}
-      </label>
+    <div className="w-full text-center">
+      <label className="block text-sm font-medium text-[#B38252] mb-1">{label}</label>
       <input
         type={type}
         name={name}
         value={value}
         onChange={onChange}
-        style={{
-          width: "100%",
-          maxWidth: "240px",
-          padding: "10px 12px",
-          borderRadius: 10,
-          border: "1px solid #D2B48C",
-          outline: "none",
-          background: "#FFF",
-          fontSize: "14px",
-          color: "#333",
-          textAlign: "center",
-        }}
+        className="w-full max-w-[240px] px-3 py-2 border border-[#D2B48C] rounded-lg text-center bg-white"
       />
     </div>
   );
 }
 
-// 읽기 전용 이메일 표시 필드
 function ReadOnlyField({ label, value }: { label: string; value: string }) {
   return (
-    <div style={{ width: "100%", textAlign: "center" }}>
-      <label
-        style={{
-          display: "block",
-          fontSize: "14px",
-          fontWeight: 500,
-          color: "#B38252",
-          marginBottom: "6px",
-        }}
-      >
-        {label}
-      </label>
+    <div className="w-full text-center">
+      <label className="block text-sm font-medium text-[#B38252] mb-1">{label}</label>
       <input
-        type="text"
         value={value}
         readOnly
-        style={{
-          width: "100%",
-          maxWidth: "240px",
-          padding: "10px 12px",
-          borderRadius: 10,
-          border: "1px solid #D2B48C",
-          background: "#f7f7f7",
-          color: "#888",
-          fontSize: "14px",
-          textAlign: "center",
-        }}
+        className="w-full max-w-[240px] px-3 py-2 border border-[#D2B48C] rounded-lg text-center bg-gray-100 text-gray-500"
       />
     </div>
   );

@@ -44,18 +44,7 @@ export default function SleepChart() {
   }, []);
 
   return (
-    <div
-      style={{
-        background: "#FAF3E0",
-        borderRadius: "20px",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-        height: "280px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "16px 32px",
-      }}
-    >
+    <div className="bg-[#FAF3E0] rounded-2xl shadow-md h-[280px] flex items-center justify-center p-8">
       {sleepData.length > 0 ? (
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
@@ -76,7 +65,7 @@ export default function SleepChart() {
           </BarChart>
         </ResponsiveContainer>
       ) : (
-        <span style={{ color: "#B38252", fontSize: "16px" }}>
+        <span className="text-[#B38252] text-[16px]">
           수면 데이터가 없습니다
         </span>
       )}

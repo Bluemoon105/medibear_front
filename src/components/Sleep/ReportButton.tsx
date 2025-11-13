@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import { getDailyReport, getWeeklyReport } from "../../services/SleepServices/ReportServices";
 
@@ -10,7 +11,6 @@ type ReportButtonGroupProps = {
 export default function ReportButtonGroup({ memberNo, onReport }: ReportButtonGroupProps) {
   const [loading, setLoading] = useState<"daily" | "weekly" | null>(null);
 
-  // 버튼 클릭 시 API 호출
   const handleReport = async (type: "daily" | "weekly") => {
     try {
       setLoading(type);
@@ -22,7 +22,7 @@ export default function ReportButtonGroup({ memberNo, onReport }: ReportButtonGr
 
       const content =
         response?.report ||
-        `${type === "daily" ? "일간" : "주간"} 리포트 데이터를 불러왔습니다.`;
+        `${type === "daily" ? "일간" : "주간"} 리포트를 가져왔습니다.`;
 
       onReport(type, content);
     } catch (error) {
@@ -34,45 +34,37 @@ export default function ReportButtonGroup({ memberNo, onReport }: ReportButtonGr
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "flex-start",
-        gap: "10px",
-        marginBottom: "10px",
-      }}
-    >
+    <div className="flex gap-3 mb-3">
+      {/* 일간 버튼 */}
       <button
         onClick={() => handleReport("daily")}
         disabled={loading === "daily"}
-        style={{
-          backgroundColor: loading === "daily" ? "#C4A484" : "#D2B48C",
-          border: "none",
-          outline:"none",
-          borderRadius: "20px",
-          padding: "8px 18px",
-          fontWeight: 600,
-          color: "#000",
-          cursor: loading ? "not-allowed" : "pointer",
-        }}
+        className={`
+          px-5 py-2 rounded-full font-semibold text-black
+          transition-all duration-200
+          ${loading === "daily"
+            ? "bg-[#C4A484] cursor-not-allowed opacity-70"
+            : "bg-[#D2B48C] hover:bg-[#c2a077] active:scale-[0.97]"
+          }
+        `}
       >
-        일간 리포트
+        {loading === "daily" ? "불러오는 중..." : "일간 리포트"}
       </button>
+
+      {/* 주간 버튼 */}
       <button
         onClick={() => handleReport("weekly")}
         disabled={loading === "weekly"}
-        style={{
-          backgroundColor: loading === "weekly" ? "#9B7040" : "#B38252",
-          border: "none",
-          outline:"none",
-          borderRadius: "20px",
-          padding: "8px 18px",
-          fontWeight: 600,
-          color: "#000",
-          cursor: loading ? "not-allowed" : "pointer",
-        }}
+        className={`
+          px-5 py-2 rounded-full font-semibold text-black
+          transition-all duration-200
+          ${loading === "weekly"
+            ? "bg-[#9B7040] cursor-not-allowed opacity-70"
+            : "bg-[#B38252] hover:bg-[#9e6f3f] active:scale-[0.97]"
+          }
+        `}
       >
-        주간 리포트
+        {loading === "weekly" ? "불러오는 중..." : "주간 리포트"}
       </button>
     </div>
   );
