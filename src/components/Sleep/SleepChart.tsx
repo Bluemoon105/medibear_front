@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "../../config/setAxios";
+// import axios from "../../config/setAxios";
 import {
   BarChart,
   Bar,
@@ -9,7 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import {autoRefreshCheck} from "../../utils/TokenUtils";
+import {autoRefreshCheck} from "../../utils/TokenUtils.js";
 
 interface SleepRecord {
   date: string;
@@ -23,19 +23,15 @@ export default function SleepChart() {
   useEffect(() => {
     const fetchSleepData = async () => {
       try {
-<<<<<<< HEAD
         // const res = await axios.get(`/sleep/recent`, { params: { userId } });
         //토큰 재발급요청용 
    
         const res = await autoRefreshCheck({
           url: "/sleep/recent",
           method: "GET",
-          params: { userId},
+          params: { memberNo},
           credentials: 'include',
         });
-=======
-        const res = await axios.get(`/sleep/recent`, { params: { memberNo } });
->>>>>>> main
 
         const formatted: SleepRecord[] = res.data.data
           .map((d: any) => ({
