@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useRef, useState } from "react";
 import axios from "../../config/setAxios";
 import { toast, ToastContainer } from "react-toastify";
@@ -19,7 +20,6 @@ export default function FormModal({ isOpen, onClose }: FormModalProps) {
 
   const modalRef = useRef<HTMLDivElement>(null);
 
-  // ESC 닫기
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -28,7 +28,6 @@ export default function FormModal({ isOpen, onClose }: FormModalProps) {
     return () => window.removeEventListener("keydown", handleEsc);
   }, [onClose]);
 
-  // 배경 클릭 닫기
   const handleOutsideClick = (e: React.MouseEvent) => {
     if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
       onClose();
@@ -42,11 +41,10 @@ export default function FormModal({ isOpen, onClose }: FormModalProps) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 활동 데이터 저장 + 예측까지 수행
   const handleSubmit = async () => {
     try {
       const payload = {
-        memberNo: 2, // 로그인 후 동적 변경 예정
+        memberNo: 2,
         sleepHours: parseFloat(formData.sleepHours) || 0,
         caffeineMg: parseFloat(formData.caffeineMg) || 0,
         alcoholConsumption: parseFloat(formData.alcoholConsumption) || 0,
@@ -55,35 +53,22 @@ export default function FormModal({ isOpen, onClose }: FormModalProps) {
 
       console.log("📤 활동 데이터 전송:", payload);
 
-      // 1) 활동 데이터 저장 요청
-      const res = await axios.post("/sleep/activities", payload, {
-        headers: { "Content-Type": "application/json" },
-      });
+      await axios.post("/sleep/activities", payload);
 
-      console.log("활동 데이터 저장 완료:", res.data);
-
-      // 2) 피로도 예측 호출 (GET)
-      console.log("🚀 피로도 예측 요청...");
       const fatigueRes = await axios.get("/sleep/predict-fatigue", {
         params: { memberNo: 2 },
       });
-      console.log("피로도 예측 결과:", fatigueRes.data);
 
-      // 3) 최적 수면시간 예측 호출 (GET)
-      console.log("🚀 최적 수면시간 예측 요청...");
       const sleepRes = await axios.get("/sleep/predict-sleephours", {
         params: { memberNo: 2 },
       });
-      console.log("최적 수면시간 예측 결과:", sleepRes.data);
 
-      // 성공 메시지
       toast.success("오늘의 활동 데이터 저장 & 예측 완료!", {
         position: "top-center",
         autoClose: 2200,
         theme: "colored",
       });
 
-      // 입력 초기화
       setFormData({
         sleepHours: "",
         caffeineMg: "",
@@ -92,16 +77,12 @@ export default function FormModal({ isOpen, onClose }: FormModalProps) {
       });
 
       onClose();
-
-      // 분석 페이지 새로고침
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
+      setTimeout(() => window.location.reload(), 500);
     } catch (err: any) {
       console.error("에러 발생:", err);
 
       if (err.response?.status === 400) {
-        toast.warning(err.response.data || "오늘 활동 데이터가 이미 등록되었습니다.", {
+        toast.warning("오늘 활동 데이터가 이미 등록되었습니다.", {
           position: "top-center",
           autoClose: 2000,
           theme: "colored",
@@ -122,70 +103,27 @@ export default function FormModal({ isOpen, onClose }: FormModalProps) {
 
       <div
         onClick={handleOutsideClick}
-        style={{
-          position: "fixed",
-          inset: 0,
-          background: "rgba(0, 0, 0, 0.4)",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          zIndex: 50,
-        }}
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50"
       >
         <div
           ref={modalRef}
-          style={{
-            background: "#FAF3E0",
-            borderRadius: 20,
-            boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
-            width: "420px",
-            padding: "32px",
-            position: "relative",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
+          className="bg-[#FAF3E0] rounded-2xl shadow-2xl w-[420px] max-w-[90%] p-8 relative flex flex-col items-center"
         >
+          {/* 닫기 버튼 */}
           <button
             onClick={onClose}
-            style={{
-              position: "absolute",
-              top: "10px",
-              right: "16px",
-              fontSize: "24px",
-              fontWeight: "bold",
-              color: "#B38252",
-              border: "none",
-              background: "transparent",
-              cursor: "pointer",
-            }}
+            className="absolute top-4 right-5 text-3xl font-bold text-[#B38252] hover:text-[#8d643b] transition"
           >
             ×
           </button>
 
-          <h2
-            style={{
-              textAlign: "center",
-              fontSize: "20px",
-              fontWeight: 600,
-              color: "#B38252",
-              marginBottom: "24px",
-            }}
-          >
+          {/* 제목 */}
+          <h2 className="text-center text-xl font-semibold text-[#B38252] mb-6">
             수면 및 활동 데이터 입력
           </h2>
 
-          {/* 입력 필드들 */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "18px",
-              alignItems: "center",
-              width: "100%",
-              maxWidth: "320px",
-            }}
-          >
+          {/* 입력 필드 */}
+          <div className="flex flex-col gap-5 w-full max-w-xs">
             <InputField label="수면시간 (시간)" name="sleepHours" value={formData.sleepHours} onChange={handleChange} />
             <InputField label="카페인 섭취량 (mg)" name="caffeineMg" value={formData.caffeineMg} onChange={handleChange} />
             <InputField label="알코올 섭취량 (잔)" name="alcoholConsumption" value={formData.alcoholConsumption} onChange={handleChange} />
@@ -193,40 +131,17 @@ export default function FormModal({ isOpen, onClose }: FormModalProps) {
           </div>
 
           {/* 버튼 */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              marginTop: "32px",
-              gap: "12px",
-              width: "100%",
-            }}
-          >
+          <div className="flex justify-center gap-4 w-full mt-8">
             <button
               onClick={onClose}
-              style={{
-                padding: "10px 16px",
-                borderRadius: 12,
-                background: "#ccc",
-                color: "#333",
-                border: "none",
-                fontWeight: 500,
-                cursor: "pointer",
-              }}
+              className="px-4 py-2 rounded-xl bg-gray-300 text-gray-800 hover:bg-gray-400 transition font-medium"
             >
               취소
             </button>
+
             <button
               onClick={handleSubmit}
-              style={{
-                padding: "10px 16px",
-                borderRadius: 12,
-                background: "#D2B48C",
-                color: "#000",
-                fontWeight: 600,
-                border: "none",
-                cursor: "pointer",
-              }}
+              className="px-4 py-2 rounded-xl bg-[#D2B48C] text-black hover:bg-[#c3a179] transition font-semibold"
             >
               저장
             </button>
@@ -237,7 +152,6 @@ export default function FormModal({ isOpen, onClose }: FormModalProps) {
   );
 }
 
-// 입력 필드 컴포넌트
 function InputField({
   label,
   name,
@@ -250,20 +164,8 @@ function InputField({
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) {
   return (
-    <div style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
-      <label
-        style={{
-          display: "block",
-          fontSize: "14px",
-          fontWeight: 500,
-          color: "#B38252",
-          marginBottom: "6px",
-          textAlign: "center",
-          width: "100%",
-        }}
-      >
-        {label}
-      </label>
+    <div className="w-full flex flex-col">
+      <label className="text-sm text-[#B38252] font-medium mb-1 text-center">{label}</label>
 
       <input
         type="number"
@@ -271,18 +173,13 @@ function InputField({
         value={value}
         onChange={onChange}
         placeholder="값을 입력하세요"
-        style={{
-          width: "100%",
-          maxWidth: "240px",
-          padding: "10px 12px",
-          borderRadius: 10,
-          border: "1px solid #D2B48C",
-          outline: "none",
-          background: "#FFF",
-          fontSize: "14px",
-          color: "#333",
-          textAlign: "center",
-        }}
+        className="
+          w-full px-3 py-2 rounded-xl text-center
+          bg-white border border-[#D2B48C]
+          text-gray-700 text-sm
+          focus:outline-none focus:ring-2 focus:ring-[#D2B48C]
+          shadow-sm
+        "
       />
     </div>
   );
