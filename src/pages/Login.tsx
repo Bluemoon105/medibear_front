@@ -10,34 +10,7 @@ export default function Login() {
   //   console.log("로그인 시도:", { email, password });
   // };
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("dddddd")
-    try {
-      // ① 로그인 요청 보내기
-      const res = await axios.post("http://localhost:8080/api/login", {
-        email,
-        password,
-      });
-
-      // ② 서버로부터 JWT 토큰 받기
-      const accessToken = res.data.accessToken;
-      const refreshToken = res.data.refreshToken;
-
-      // ③ 로컬 스토리지에 저장
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("refreshToken", refreshToken);
-
-      alert("로그인 성공!");
-      console.log("✅ 로그인 성공:", res.data);
-
-      // ④ 이후 페이지 이동 (예: 메인 페이지)
-      window.location.href = "/exercise";
-    } catch (err: any) {
-      console.error("❌ 로그인 실패:", err);
-      alert("이메일 또는 비밀번호를 확인하세요.");
-    }
-  };
+  
 
   return (
     <div
