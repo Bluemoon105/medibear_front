@@ -12,7 +12,7 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
   const [selectedFileName, setSelectedFileName] = useState("");
   const [sending, setSending] = useState(false);
 
-  // auto-resize for textarea
+  // textarea 자동 높이 조절
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
     const ta = textareaRef.current;
@@ -25,16 +25,17 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
   const exerciseMedia = useExerciseMedia({ onSend });
   const stressMedia   = useStressMedia({ onSend });
 
+  // 전송 버튼 눌렀을 때 
   const handleSend = async () => {
     const trimmed = text.trim();
 
     // 텍스트 모드에서는 빈 문자열이면 전송하지 않음
     if (!trimmed && mode === "text") return;
 
-    // 현재 variant에 맞게 미디어 payload 수집
+    // 현재 variant(exercise)에 맞게 미디어 payload 수집
     const mediaPayload =
       variant === "exercise"
-        ? (exerciseMedia.getPayload?.() ?? {})
+        ? (exerciseMedia.getPayload?.() ?? {})  // getPayload로 base64Image 또는 base64Video를 mediaPayload에 저장
         : {};
 
     // 미디어 모드 가드: 파일이 없으면 전송 막기
@@ -46,18 +47,20 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
 
     setSending(true);
     try {
-      await onSend({ text: trimmed, ...mediaPayload }); // 텍스트 + 미디어 동시 전송
+      // onSend 호출 : 부모 컴포넌트(ExerciseChat에 text, 미디어 전송)
+      await onSend({ text: trimmed, ...mediaPayload }); 
       // 성공 시 입력/미디어 상태 초기화
       setText("");
       setSelectedFileName("");
       if (variant === "exercise") exerciseMedia.clear?.();
-      // 필요하면 전송 후 텍스트 모드로 복귀:
-      // setMode("text");
+      // 전송 후 텍스트 모드로 복귀:
+      setMode("text");
     } finally {
       setSending(false);
     }
   };
 
+  // Enter로 전송
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
