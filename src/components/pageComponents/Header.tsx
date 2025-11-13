@@ -12,7 +12,7 @@ const Header = ({ children }: HeaderProps) => {
   return (
     <div className="drawer drawer-open">
       <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
-      <div className="drawer-content mt-15 ml-10">{children}</div>
+      <div className="drawer-content overflow-y-auto h-screen">{children}</div>
 
       <div className="drawer-side is-drawer-close:overflow-visible">
         <label
@@ -20,7 +20,7 @@ const Header = ({ children }: HeaderProps) => {
           aria-label="close sidebar"
           className="drawer-overlay"
         ></label>
-        <div className="is-drawer-close:w-14 is-drawer-open:w-64 bg-base-200 flex flex-col items-start min-h-full">
+        <div className="is-drawer-close:w-14 is-drawer-open:w-64 bg-base-100 flex flex-col items-start min-h-full">
           {/* ===== Sidebar Menu ===== */}
           <ul className="menu w-full grow">
             {/* 운동 챗봇 */}
