@@ -12,7 +12,7 @@ interface Message {
 
 export default function SleepChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
-  const memberNo = 1;
+  const memberNo = 2;
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement | null>(null); 
 

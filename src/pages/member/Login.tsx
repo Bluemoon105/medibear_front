@@ -42,7 +42,7 @@ const Login = () => {
 					/>
 				</div>
 				<div className="flex flex-col">
-					<button type="submit" className="btn btn-primary w-full" onClick={()=> navigate("/calorie")}>
+					<button type="submit" className="btn btn-primary w-full" onClick={()=> navigate("/exercise")}>
 						로그인
 					</button>
 

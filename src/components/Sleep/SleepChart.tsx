@@ -17,7 +17,7 @@ interface SleepRecord {
 
 export default function SleepChart() {
   const [sleepData, setSleepData] = useState<SleepRecord[]>([]);
-  const memberNo = 1;
+  const memberNo = 2;
 
   useEffect(() => {
     const fetchSleepData = async () => {

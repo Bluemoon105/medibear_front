@@ -6,7 +6,7 @@ export default function SleepInsights() {
   const [sleepQuality, setSleepQuality] = useState<number | null>(null);
   const [conditionLevel, setConditionLevel] = useState<string>("");
   const [recommendedSleep, setRecommendedSleep] = useState<string>("예측 중...");
-  const memberNo = 1;
+  const memberNo = 2;
 
   const conditionEmoji: Record<string, string> = {
     좋음: "😆",

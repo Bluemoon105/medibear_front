@@ -16,6 +16,7 @@ export default function FormModal({ isOpen, onClose }: FormModalProps) {
     alcoholConsumption: "",
     activityHours: "",
   });
+
   const modalRef = useRef<HTMLDivElement>(null);
 
   // ESC 닫기
@@ -29,7 +30,9 @@ export default function FormModal({ isOpen, onClose }: FormModalProps) {
 
   // 배경 클릭 닫기
   const handleOutsideClick = (e: React.MouseEvent) => {
-    if (modalRef.current && !modalRef.current.contains(e.target as Node)) onClose();
+    if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+      onClose();
+    }
   };
 
   if (!isOpen) return null;
@@ -39,11 +42,11 @@ export default function FormModal({ isOpen, onClose }: FormModalProps) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  //활동 데이터 저장 + 피로도 예측
+  // 활동 데이터 저장 + 예측까지 수행
   const handleSubmit = async () => {
     try {
       const payload = {
-        memberNo: 1,
+        memberNo: 2, // 로그인 후 동적 변경 예정
         sleepHours: parseFloat(formData.sleepHours) || 0,
         caffeineMg: parseFloat(formData.caffeineMg) || 0,
         alcoholConsumption: parseFloat(formData.alcoholConsumption) || 0,
@@ -52,22 +55,29 @@ export default function FormModal({ isOpen, onClose }: FormModalProps) {
 
       console.log("📤 활동 데이터 전송:", payload);
 
-      // 활동 데이터 저장
+      // 1) 활동 데이터 저장 요청
       const res = await axios.post("/sleep/activities", payload, {
         headers: { "Content-Type": "application/json" },
       });
+
       console.log("활동 데이터 저장 완료:", res.data);
 
-      // 피로도 예측 호출
-      console.log("피로도 예측 요청...");
-      const predict = await axios.post(
-        `/sleep/activities/predict-fatigue`,
-        null,
-        { params: { memberNo: 1 } }
-      );
-      console.log("피로도 예측 결과:", predict.data);
+      // 2) 피로도 예측 호출 (GET)
+      console.log("🚀 피로도 예측 요청...");
+      const fatigueRes = await axios.get("/sleep/predict-fatigue", {
+        params: { memberNo: 2 },
+      });
+      console.log("피로도 예측 결과:", fatigueRes.data);
 
-      toast.success("오늘의 활동 데이터가 저장되고 피로도 예측이 완료되었습니다!", {
+      // 3) 최적 수면시간 예측 호출 (GET)
+      console.log("🚀 최적 수면시간 예측 요청...");
+      const sleepRes = await axios.get("/sleep/predict-sleephours", {
+        params: { memberNo: 2 },
+      });
+      console.log("최적 수면시간 예측 결과:", sleepRes.data);
+
+      // 성공 메시지
+      toast.success("오늘의 활동 데이터 저장 & 예측 완료!", {
         position: "top-center",
         autoClose: 2200,
         theme: "colored",
@@ -83,14 +93,15 @@ export default function FormModal({ isOpen, onClose }: FormModalProps) {
 
       onClose();
 
-      // SleepAnalysis 새로고침
+      // 분석 페이지 새로고침
       setTimeout(() => {
         window.location.reload();
       }, 500);
     } catch (err: any) {
       console.error("에러 발생:", err);
+
       if (err.response?.status === 400) {
-        toast.warning(err.response.data || "오늘은 이미 활동량이 등록되었습니다.", {
+        toast.warning(err.response.data || "오늘 활동 데이터가 이미 등록되었습니다.", {
           position: "top-center",
           autoClose: 2000,
           theme: "colored",
@@ -107,7 +118,6 @@ export default function FormModal({ isOpen, onClose }: FormModalProps) {
 
   return (
     <>
-      {/* ToastContainer는 모달 바깥에서도 표시 가능 */}
       <ToastContainer />
 
       <div
@@ -165,7 +175,7 @@ export default function FormModal({ isOpen, onClose }: FormModalProps) {
             수면 및 활동 데이터 입력
           </h2>
 
-          {/* 입력 필드 */}
+          {/* 입력 필드들 */}
           <div
             style={{
               display: "flex",
@@ -227,7 +237,7 @@ export default function FormModal({ isOpen, onClose }: FormModalProps) {
   );
 }
 
-// 입력 필드
+// 입력 필드 컴포넌트
 function InputField({
   label,
   name,
@@ -254,12 +264,13 @@ function InputField({
       >
         {label}
       </label>
+
       <input
         type="number"
         name={name}
         value={value}
         onChange={onChange}
-        placeholder={name === "caffeineMg" ? "예: 150" : "예: 2.5"}
+        placeholder="값을 입력하세요"
         style={{
           width: "100%",
           maxWidth: "240px",
