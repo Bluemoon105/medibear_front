@@ -17,6 +17,20 @@
 body {
 	overflow: hidden;
 }
+
+/* toast가 항상 모달보다 위에 오도록 */
+.Toastify__toast-container {
+  z-index: 99999 !important;
+}
+
+.Toastify__toast {
+  z-index: 99999 !important;
+}
+
+.Toastify__overlay {
+  z-index: 99999 !important;
+}
+
 /* html, body, #root {
   margin: 0;
   padding: 0;

@@ -1,12 +1,42 @@
 import { useState } from "react";
+import axios from "axios";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = (e: React.FormEvent) => {
+  // const handleLogin = (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   console.log("로그인 시도:", { email, password });
+  // };
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("로그인 시도:", { email, password });
+    console.log("dddddd")
+    try {
+      // ① 로그인 요청 보내기
+      const res = await axios.post("http://localhost:8080/api/login", {
+        email,
+        password,
+      });
+
+      // ② 서버로부터 JWT 토큰 받기
+      const accessToken = res.data.accessToken;
+      const refreshToken = res.data.refreshToken;
+
+      // ③ 로컬 스토리지에 저장
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
+
+      alert("로그인 성공!");
+      console.log("✅ 로그인 성공:", res.data);
+
+      // ④ 이후 페이지 이동 (예: 메인 페이지)
+      window.location.href = "/exercise";
+    } catch (err: any) {
+      console.error("❌ 로그인 실패:", err);
+      alert("이메일 또는 비밀번호를 확인하세요.");
+    }
   };
 
   return (
@@ -29,7 +59,6 @@ export default function Login() {
 
       {/* 로그인 폼 */}
       <form
-        onSubmit={handleLogin}
         style={{
           background: "#FAF3E0",
           borderRadius: 20,
@@ -42,9 +71,9 @@ export default function Login() {
           gap: "18px",
         }}
       >
-        <h2 style={{ fontSize: "18px", fontWeight: 600, color: "#B38252" }}>
+        <button onClick={handleLogin} style={{ fontSize: "18px", fontWeight: 600, color: "#B38252" }}>
           로그인
-        </h2>
+        </button>
         <p style={{ fontSize: "13px", color: "#444", marginBottom: "10px" }}>
           Enter your email and password to sign in for this app
         </p>

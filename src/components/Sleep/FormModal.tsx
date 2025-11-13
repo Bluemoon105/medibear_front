@@ -50,7 +50,7 @@ export default function FormModal({ isOpen, onClose }: FormModalProps) {
         physicalActivityHours: parseFloat(formData.activityHours) || 0,
       };
 
-      console.log("📤 활동 데이터 전송:", payload);
+      console.log("활동 데이터 전송:", payload);
 
       // 활동 데이터 저장
       const res = await axios.post("/sleep/activities", payload, {

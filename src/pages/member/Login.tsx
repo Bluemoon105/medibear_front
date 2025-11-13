@@ -1,17 +1,53 @@
 import type { FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { useState } from "react";
 
 const Login = () => {
-	const navigate = useNavigate();
-	const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-		event.preventDefault();
-		// TODO: 로그인 API 연동
+	const [email, setEmail] = useState("");
+	const [password, setPassword] = useState("");
+	
+	const handleLogin = async (e: React.FormEvent) => {
+  	e.preventDefault();
+
+  try {
+    const response = await fetch("http://localhost:8080/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: 'include',
+      body: JSON.stringify({ email, password }),
+    });
+
+    // 1) HTTP 상태 체크
+    if (!response.ok) {
+     
+      alert("로그인 실패: 메일이나 비밀번호를 다시 확인해보세요");
+      return;
+    }
+
+    // 2) 토큰 추출
+    const accessToken = response.headers.get("Authorization");
+
+    if (!accessToken) {
+      alert("로그인 실패: 토큰을 받지 못했습니다.");
+      return;
+    }
+
+    // 3) 저장 및 이동
+    localStorage.setItem("accessToken", accessToken);
+    alert("로그인 성공!");
+    window.location.href = "/exercise";
+
+  } catch (err) {
+    console.error("❌ 로그인 실패:", err);
+    alert("서버 오류가 발생했습니다.");
+  }
 	};
 
 	return (
 		<div className="flex min-h-screen items-center justify-center bg-base-200 px-4">
 			<form
-				onSubmit={handleSubmit}
+				onSubmit={handleLogin}
 				className="w-full max-w-sm space-y-6 rounded-xl bg-base-100 p-8 shadow-lg"
 			>
 				<h1 className="text-2xl font-semibold text-center">로그인</h1>
@@ -21,7 +57,8 @@ const Login = () => {
 					</label>
 					<input
 						type="email"
-						id="email"
+						value={email}
+          				onChange={(e) => setEmail(e.target.value)}
 						name="email"
 						placeholder="example@domain.com"
 						required
@@ -34,15 +71,19 @@ const Login = () => {
 					</label>
 					<input
 						type="password"
-						id="password"
-						name="password"
+						value={password}
+						onChange={(e) => setPassword(e.target.value)}
 						placeholder="비밀번호를 입력하세요"
 						required
 						className="input input-bordered w-full"
 					/>
 				</div>
 				<div className="flex flex-col">
-					<button type="submit" className="btn btn-primary w-full" onClick={()=> navigate("/calorie")}>
+<<<<<<< HEAD
+					<button type="submit" className="btn btn-primary w-full">
+=======
+					<button type="submit" className="btn btn-primary w-full" onClick={()=> navigate("/exercise")}>
+>>>>>>> main
 						로그인
 					</button>
 
