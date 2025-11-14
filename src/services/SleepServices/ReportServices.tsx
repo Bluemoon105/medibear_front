@@ -9,8 +9,7 @@ export async function getDailyReport(){
   const res = await autoRefreshCheck({
     url: '/chat/report/daily',
     method:"GET",
-    params:{email},
-    credentials:"include",
+    params:{email}
   });
 
   return res.data;
@@ -24,8 +23,7 @@ export async function getWeeklyReport() {
   const res = await autoRefreshCheck({
     url: '/chat/report/weekly',
     method: "GET",
-    params: {email},
-    credentials: "include",
+    params: {email}
   });
   
   return res.data;
