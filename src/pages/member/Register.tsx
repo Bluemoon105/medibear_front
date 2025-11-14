@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "../../config/setAxios";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -21,17 +22,50 @@ export default function Register() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // 약관 동의 체크
     if (!form.agree) {
-      toast.warning("개인정보 수집에 동의해주세요");
+      toast.warning("개인정보 수집에 동의해주세요.");
       return;
     }
+
+    // 비밀번호 확인
     if (form.password !== form.passwordCheck) {
       toast.error("비밀번호가 일치하지 않습니다.");
       return;
     }
-    console.log("Registration Data:", form);
+
+    // 요청 데이터
+    const payload = {
+      name: form.name,
+      email: form.email,
+      password: form.password,
+      gender: form.gender === "male" ? "M" : "F",
+      birthDate: form.birth,
+    };
+
+    try {
+      await axios.post("/api/signUp", payload, {
+        headers: { "Content-Type": "application/json" },
+      });
+
+      toast.success("회원가입이 완료되었습니다!", {
+        onClose: () => {
+          window.location.href = "/login"; // 완료 후 로그인 페이지 이동
+        },
+      });
+    } catch (err: any) {
+      console.error("회원가입 오류:", err);
+
+      const message =
+        err.response?.data?.message ||
+        err.response?.data ||
+        "회원가입 중 오류가 발생했습니다.";
+
+      toast.error(message);
+    }
   };
 
   const baseInputStyle: React.CSSProperties = {
@@ -60,7 +94,9 @@ export default function Register() {
         fontFamily: "sans-serif",
       }}
     >
-      {/* Logo */}
+      {/* ToastContainer 전역 위치 */}
+      <ToastContainer position="top-center" autoClose={2000} theme="colored" />
+
       <h1 style={{ fontSize: "28px", fontWeight: 700, marginBottom: "40px" }}>
         MediBear
       </h1>
@@ -83,9 +119,6 @@ export default function Register() {
         <h2 style={{ fontSize: "18px", fontWeight: 600, color: "#B38252" }}>
           Sign Up
         </h2>
-        <p style={{ fontSize: "13px", color: "#444", marginBottom: "10px" }}>
-          Enter your information to create an account.
-        </p>
 
         {/* Name */}
         <input
@@ -95,8 +128,6 @@ export default function Register() {
           value={form.name}
           onChange={handleChange}
           style={baseInputStyle}
-          onFocus={(e) => (e.target.style.borderColor = "#B38252")}
-          onBlur={(e) => (e.target.style.borderColor = "#D2B48C")}
         />
 
         {/* Gender */}
@@ -116,7 +147,6 @@ export default function Register() {
               height: "48px",
               borderRadius: "999px",
               border: "1px solid #D2B48C",
-              outline: "none",
               background: form.gender === "male" ? "#D2B48C" : "#FFF",
               color: "#000",
               fontWeight: 600,
@@ -133,7 +163,6 @@ export default function Register() {
               height: "48px",
               borderRadius: "999px",
               border: "1px solid #D2B48C",
-              outline: "none",
               background: form.gender === "female" ? "#D2B48C" : "#FFF",
               color: "#000",
               fontWeight: 600,
@@ -145,97 +174,13 @@ export default function Register() {
         </div>
 
         {/* Birthdate */}
-        <div style={{ width: "100%" }}>
-          <label
-            style={{
-              fontSize: "13px",
-              color: "#B38252",
-              fontWeight: 500,
-              marginBottom: "4px",
-              display: "block",
-            }}
-          >
-            Birth Date
-          </label>
-          <div style={{ position: "relative", width: "100%" }}>
-            <input
-              type="date"
-              name="birth"
-              value={form.birth}
-              onChange={handleChange}
-              style={{
-                width: "100%",
-                height: "48px",
-                lineHeight: "48px",
-                padding: "0 48px 0 16px",
-                borderRadius: 10,
-                border: "1px solid #D2B48C",
-                background: "#FFF",
-                fontSize: "14px",
-                outline: "none",
-                color: "#000",
-                boxSizing: "border-box",
-                textAlign: "center",
-                appearance: "none",
-                MozAppearance: "textfield",
-              }}
-              onFocus={(e) => (e.target.style.borderColor = "#B38252")}
-              onBlur={(e) => (e.target.style.borderColor = "#D2B48C")}
-            />
-
-            <style>
-              {`
-                input[type="date"]::-webkit-inner-spin-button,
-                input[type="date"]::-webkit-clear-button {
-                  display: none;
-                }
-                input[type="date"]::-webkit-calendar-picker-indicator {
-                  opacity: 0;
-                  pointer-events: auto;
-                  position: absolute;
-                  right: 0;
-                  width: 100%;
-                  height: 100%;
-                  cursor: pointer;
-                }
-              `}
-            </style>
-
-            {/* Custom Calendar Icon */}
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              style={{
-                position: "absolute",
-                right: 12,
-                top: "50%",
-                transform: "translateY(-50%)",
-                pointerEvents: "none",
-                opacity: 0.7,
-              }}
-            >
-              <rect
-                x="3"
-                y="5"
-                width="18"
-                height="16"
-                rx="2"
-                stroke="#B38252"
-                strokeWidth="1.5"
-              />
-              <path
-                d="M8 3V7M16 3V7"
-                stroke="#B38252"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-              <path d="M3 10H21" stroke="#B38252" strokeWidth="1.5" />
-            </svg>
-          </div>
-        </div>
+        <input
+          type="date"
+          name="birth"
+          value={form.birth}
+          onChange={handleChange}
+          style={baseInputStyle}
+        />
 
         {/* Email */}
         <input
@@ -245,8 +190,6 @@ export default function Register() {
           value={form.email}
           onChange={handleChange}
           style={baseInputStyle}
-          onFocus={(e) => (e.target.style.borderColor = "#B38252")}
-          onBlur={(e) => (e.target.style.borderColor = "#D2B48C")}
         />
 
         {/* Password */}
@@ -257,11 +200,8 @@ export default function Register() {
           value={form.password}
           onChange={handleChange}
           style={baseInputStyle}
-          onFocus={(e) => (e.target.style.borderColor = "#B38252")}
-          onBlur={(e) => (e.target.style.borderColor = "#D2B48C")}
         />
 
-        {/* Password Check */}
         <input
           type="password"
           name="passwordCheck"
@@ -269,11 +209,9 @@ export default function Register() {
           value={form.passwordCheck}
           onChange={handleChange}
           style={baseInputStyle}
-          onFocus={(e) => (e.target.style.borderColor = "#B38252")}
-          onBlur={(e) => (e.target.style.borderColor = "#D2B48C")}
         />
 
-        {/* Privacy Agreement */}
+        {/* Agree */}
         <div
           style={{
             width: "100%",
@@ -281,7 +219,6 @@ export default function Register() {
             alignItems: "center",
             gap: "8px",
             fontSize: "13px",
-            color: "#000",
           }}
         >
           <input
@@ -289,16 +226,12 @@ export default function Register() {
             name="agree"
             checked={form.agree}
             onChange={handleChange}
-            style={{
-              width: "16px",
-              height: "16px",
-              accentColor: "#B38252",
-            }}
+            style={{ width: "16px", height: "16px", accentColor: "#B38252" }}
           />
           <label>I agree to the collection and use of personal information.</label>
         </div>
 
-        {/* Submit Button */}
+        {/* Submit */}
         <button
           type="submit"
           style={{
