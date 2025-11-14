@@ -4,31 +4,62 @@ import { useExerciseMedia } from "../InputBar/ExerciseMediaInput";
 import { useStressMedia } from "../InputBar/StressMediaInput";
 import type { InputBarProps } from "../InputBar/types";
 
+type Mode = "text" | "image" | "video" | "webcam";
+
 export default function InputBar({ variant, onSend }: InputBarProps) {
-  const [mode, setMode] = useState("text");
+  const [mode, setMode] = useState<Mode>("text");
   const [text, setText] = useState("");
   const [selectedFileName, setSelectedFileName] = useState("");
+  const [sending, setSending] = useState(false);
 
-  const exerciseMedia = useExerciseMedia({ onSend });
-  const stressMedia = useStressMedia({ onSend });
-
+  // textarea 자동 높이 조절
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  // 자동 높이 조절
   useEffect(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = "auto";
-      textarea.style.height = textarea.scrollHeight + "px";
-    }
+    const ta = textareaRef.current;
+    if (!ta) return;
+    ta.style.height = "auto";
+    ta.style.height = ta.scrollHeight + "px";
   }, [text]);
 
-  const handleSend = () => {
-    if (!text.trim()) return;
-    onSend({ text });
-    setText("");
+  const exerciseMedia = useExerciseMedia({ onSend });
+  const stressMedia   = useStressMedia({ onSend });
+
+  // 전송 버튼 눌렀을 때 
+  const handleSend = async () => {
+    const trimmed = text.trim();
+
+    // 텍스트 모드에서는 빈 문자열이면 전송하지 않음
+    if (!trimmed && mode === "text") return;
+
+    // 현재 variant(exercise)에 맞게 미디어 payload 수집
+    const mediaPayload =
+      variant === "exercise"
+        ? (exerciseMedia.getPayload?.() ?? {})  // getPayload로 base64Image 또는 base64Video를 mediaPayload에 저장
+        : {};
+
+    // 미디어 모드 가드: 파일이 없으면 전송 막기
+    if ((mode === "image" || mode === "video") &&
+        !mediaPayload.base64Image && !mediaPayload.base64Video) {
+      alert("파일을 선택해주세요.");
+      return;
+    }
+
+    setSending(true);
+    try {
+      // onSend 호출 : 부모 컴포넌트(ExerciseChat에 text, 미디어 전송)
+      await onSend({ text: trimmed, ...mediaPayload }); 
+      // 성공 시 입력/미디어 상태 초기화
+      setText("");
+      setSelectedFileName("");
+      if (variant === "exercise") exerciseMedia.clear?.();
+      // 전송 후 텍스트 모드로 복귀:
+      setMode("text");
+    } finally {
+      setSending(false);
+    }
   };
 
+  // Enter로 전송
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -49,8 +80,11 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
           <select
             value={mode}
             onChange={(e) => {
-              setMode(e.target.value);
+              const next = e.target.value as Mode;
+              setMode(next);
               setSelectedFileName("");
+              // 모드 변경 시 기존 미디어 초기화
+              if (variant === "exercise") exerciseMedia.clear?.();
             }}
             className="
               px-3 py-2 rounded-lg border border-gray-300 bg-white text-black
@@ -110,7 +144,7 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
           flex-shrink-0
         "
       >
-        전송
+        {sending ? "전송중..." : "전송"}
       </button>
     </div>
   );
