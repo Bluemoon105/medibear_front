@@ -12,6 +12,7 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
   const [selectedFileName, setSelectedFileName] = useState("");
   const [sending, setSending] = useState(false);
 
+  // textarea 자동 높이 조절
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
     const ta = textareaRef.current;
