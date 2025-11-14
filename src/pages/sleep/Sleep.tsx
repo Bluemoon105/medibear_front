@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import axios from "../../config/setAxios";
+import { getUserEmail } from "../../utils/getUserEmail";
+import { autoRefreshCheck} from "../../utils/TokenUtils";
 import InputBar from "../../components/InputBar/InputBar";
 import ReportButtonGroup from "../../components/Sleep/ReportButton";
 import ChatMessageBubble from "../../components/ChatMessageBubble";
@@ -12,10 +13,10 @@ interface Message {
 
 export default function SleepChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
-  const memberNo = 2;
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
-
+  const email = getUserEmail();
+  
   // 자동 스크롤
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -25,14 +26,24 @@ export default function SleepChatPage() {
   const handleSend = async (data: any) => {
     if (!data.text.trim()) return;
     const userMessage = data.text.trim();
+    const email = getUserEmail();
+
+    if(!email) {
+      setMessages((prev) => [
+        ...prev,
+        {role : "assistant", content: "로그인이 필요합니다."},
+      ]);
+      return;
+    }
 
     setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
     setLoading(true);
 
     try {
-      const res = await axios.post("/chat/message", {
-        memberNo,
-        message: userMessage,
+      const res = await autoRefreshCheck({
+        url: "/chat/message",
+        method: "POST",
+        data: {email, message: userMessage},
       });
 
       const botResponse =
@@ -102,7 +113,7 @@ export default function SleepChatPage() {
             flex-shrink-0
           "
         >
-          <ReportButtonGroup memberNo={memberNo} onReport={handleReport} />
+          <ReportButtonGroup email={email ?? ""} onReport={handleReport} />
           <InputBar variant="sleep" onSend={handleSend} />
         </div>
       </main>
