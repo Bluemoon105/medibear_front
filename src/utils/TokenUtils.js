@@ -15,7 +15,7 @@ function addRefreshSubscriber(callback) {
 }
 
 export async function autoRefreshCheck(config) {
-    const token = localStorage.getItem("jwt");
+    const token = localStorage.getItem("accessToken");
 
     if (!token) {
         return ;
@@ -66,15 +66,16 @@ export async function autoRefreshCheck(config) {
                             const newToken = refreshRes.headers["authorization"];
                             if (!newToken) throw new Error("토큰 재발급 실패");
 
-                            localStorage.setItem("jwt", newToken);
+                            localStorage.setItem("accessToken", newToken);
                             onRefreshed(newToken); // 대기 요청 모두 실행
                         })
                         .catch((refreshError) => {
-                            localStorage.removeItem("jwt");
-                            alert("세션이 만료되었습니다. 다시 로그인 해주세요.");
+                            localStorage.removeItem("accessToken");
+                            alert("세션이 만료되었습니다. 다시 로그인 해주세요."); //
                             refreshSubscribers.forEach(callback => callback(null));
                             refreshSubscribers = [];
                             reject(refreshError);
+                            window.location.href = "/login";
                         })
                         .finally(() => {
                             isRefreshing = false;

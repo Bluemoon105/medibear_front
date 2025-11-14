@@ -1,13 +1,16 @@
 import { useState } from "react";
+import axios from "axios";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("로그인 시도:", { email, password });
-  };
+  // const handleLogin = (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   console.log("로그인 시도:", { email, password });
+  // };
+
+  
 
   return (
     <div
@@ -29,7 +32,6 @@ export default function Login() {
 
       {/* 로그인 폼 */}
       <form
-        onSubmit={handleLogin}
         style={{
           background: "#FAF3E0",
           borderRadius: 20,
@@ -42,9 +44,9 @@ export default function Login() {
           gap: "18px",
         }}
       >
-        <h2 style={{ fontSize: "18px", fontWeight: 600, color: "#B38252" }}>
+        <button onClick={handleLogin} style={{ fontSize: "18px", fontWeight: 600, color: "#B38252" }}>
           로그인
-        </h2>
+        </button>
         <p style={{ fontSize: "13px", color: "#444", marginBottom: "10px" }}>
           Enter your email and password to sign in for this app
         </p>

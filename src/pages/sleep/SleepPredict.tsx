@@ -1,69 +1,53 @@
+"use client";
+
+import { useState } from "react";
 import SleepChart from "../../components/Sleep/SleepChart";
 import SleepInsights from "../../components/Sleep/SleepInsights";
 import FormModal from "../../components/Sleep/FormModal";
-import { useState } from "react";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function SleepPredict() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        height: "100vh",
-        backgroundColor: "#FFFDF8",
-        color: "#2c2c2c",
-      }}
-    >
-      {/* 메인 */}
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          padding: "40px 64px",
-          overflowY: "auto",
-        }}
-      >
-        <h1
-          style={{
-            fontSize: "24px",
-            fontWeight: 700,
-            color: "#B38252",
-            marginBottom: "32px",
-          }}
+    <>
+      <ToastContainer />   {/* 🔥 여기에 두면 무조건 잘 뜬다 */}
+
+      <div className="flex h-screen bg-[#FFFDF8] text-[#2c2c2c]">
+        <div
+          className="
+            flex-1 flex flex-col 
+            px-6 md:px-12 lg:px-16 
+            py-10 
+            overflow-y-auto
+          "
         >
-          수면 분석 및 예측
-        </h1>
+          <h1 className="text-2xl font-bold text-[#B38252] mb-8">
+            수면 분석 및 예측
+          </h1>
 
-        {/* 그래프 */}
-        <SleepChart />
+          <SleepChart />
 
-        {/* 활동량 입력 버튼 */}
-        <button
-          onClick={() => setOpen(true)}
-          style={{
-            padding: "10px 18px",
-            borderRadius: "999px",
-            background: "#D2B48C",
-            color: "#000",
-            fontSize: "14px",
-            fontWeight: 600,
-            border: "none",
-            outline: "none",
-            cursor: "pointer",
-            margin: "24px 0",
-            alignSelf: "flex-start",
-          }}
-        >
-          활동량 입력
-        </button>
+          <button
+            onClick={() => setOpen(true)}
+            className="
+              self-start
+              mt-6 mb-6 px-5 py-2 
+              rounded-full 
+              bg-[#D2B48C] text-black font-semibold
+              hover:bg-[#c6a179]
+              transition
+            "
+          >
+            활동량 입력
+          </button>
 
-        {/* 예측 결과 */}
-        <SleepInsights />
+          <SleepInsights />
+        </div>
+
+        <FormModal isOpen={open} onClose={() => setOpen(false)} />
       </div>
-
-      <FormModal isOpen={open} onClose={() => setOpen(false)} />
-    </div>
+    </>
   );
 }

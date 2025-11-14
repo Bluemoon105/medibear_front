@@ -21,7 +21,6 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
     ta.style.height = ta.scrollHeight + "px";
   }, [text]);
 
-  // media hooks (getPayload/clear를 제공한다고 가정)
   const exerciseMedia = useExerciseMedia({ onSend });
   const stressMedia   = useStressMedia({ onSend });
 
@@ -70,33 +69,13 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
 
   return (
     <div
-      style={{
-        width: "100%",
-        maxWidth: "1027px",
-        border: "1px solid black",
-        borderRadius: 20,
-        background: "#FFF",
-        display: "flex",
-        flexWrap: "wrap",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: "10px 16px",
-        margin: "20px auto",
-        boxSizing: "border-box",
-        gap: "10px",
-      }}
+      className="
+        w-full max-w-[1027px] mx-auto mt-5 p-4 rounded-2xl border border-black
+        flex flex-wrap justify-between gap-3 bg-white
+      "
     >
-      {/* 왼쪽 영역 */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          flex: 1,
-          gap: 10,
-          flexWrap: "wrap",
-          minWidth: "200px",
-        }}
-      >
+      {/* 왼쪽 입력 영역 */}
+      <div className="flex flex-1 items-center gap-3 flex-wrap min-w-[200px]">
         {(variant === "exercise" || variant === "stress") && (
           <select
             value={mode}
@@ -107,16 +86,13 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
               // 모드 변경 시 기존 미디어 초기화
               if (variant === "exercise") exerciseMedia.clear?.();
             }}
-            style={{
-              padding: "8px 10px",
-              borderRadius: 10,
-              border: "1px solid #ccc",
-              background: "#FFF",
-              color: "black",
-              fontSize: "clamp(12px, 1.8vw, 14px)",
-            }}
+            className="
+              px-3 py-2 rounded-lg border border-gray-300 bg-white text-black
+              text-[clamp(12px,1.8vw,14px)]
+            "
           >
             <option value="text">텍스트만</option>
+
             {variant === "exercise" && (
               <>
                 <option value="image">이미지 업로드</option>
@@ -124,6 +100,7 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
                 <option value="webcam">웹캠 녹화</option>
               </>
             )}
+
             {variant === "stress" && <option value="audio">음성 업로드</option>}
           </select>
         )}
@@ -141,26 +118,18 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKeyDown}
-          style={{
-            flex: 1,
-            minWidth: "150px",
-            border: "none",
-            background: "transparent",
-            fontSize: "clamp(13px, 2vw, 15px)",
-            outline: "none",
-            resize: "none",
-            overflow: "hidden",
-            color: "#000",
-            lineHeight: 1.5,
-          }}
           rows={1}
+          className="
+            flex-1 min-w-[150px] bg-transparent resize-none overflow-hidden
+            focus:outline-none text-[clamp(13px,2vw,15px)] text-black leading-[1.5]
+          "
         />
 
-        {/* 🎥 운동 미디어 */}
+        {/* 운동 미디어 */}
         {variant === "exercise" &&
           exerciseMedia.render(mode, setSelectedFileName, selectedFileName)}
 
-        {/* 🎧 스트레스 미디어 */}
+        {/* 스트레스 미디어 */}
         {variant === "stress" &&
           stressMedia.render(mode, setSelectedFileName, selectedFileName)}
       </div>
@@ -168,20 +137,12 @@ export default function InputBar({ variant, onSend }: InputBarProps) {
       {/* 전송 버튼 */}
       <button
         onClick={handleSend}
-        disabled={sending}
-        style={{
-          backgroundColor: sending ? "#c8b095" : "#D2B48C",
-          fontWeight: 600,
-          border: "none",
-          outline: "none",
-          width: "clamp(70px, 18vw, 90px)",
-          height: "clamp(45px, 12vw, 55px)",
-          borderRadius: 20,
-          cursor: sending ? "not-allowed" : "pointer",
-          fontSize: "clamp(13px, 2vw, 15px)",
-          alignSelf: "center",
-          flexShrink: 0,
-        }}
+        className="
+          bg-[#D2B48C] font-semibold text-black border-none outline-none
+          w-[clamp(70px,18vw,90px)] h-[clamp(45px,12vw,55px)]
+          rounded-2xl cursor-pointer text-[clamp(13px,2vw,15px)]
+          flex-shrink-0
+        "
       >
         {sending ? "전송중..." : "전송"}
       </button>

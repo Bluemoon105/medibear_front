@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "../../config/setAxios";
+// import axios from "../../config/setAxios";
 import {
   BarChart,
   Bar,
@@ -9,8 +9,9 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import {autoRefreshCheck} from "../../utils/TokenUtils";
+import { getUserEmail } from "../../utils/getUserEmail";
 
-//타입 정의 (SleepRecord는 수면 데이터 1개의 구조)
 interface SleepRecord {
   date: string;
   sleepHours: number;
@@ -18,20 +19,29 @@ interface SleepRecord {
 
 export default function SleepChart() {
   const [sleepData, setSleepData] = useState<SleepRecord[]>([]);
-  const userId = "user001"; // 나중에 로그인 유저 기반으로 바꿔도 됨
 
   useEffect(() => {
     const fetchSleepData = async () => {
       try {
-        const res = await axios.get(`/sleep/recent`, { params: { userId } });
 
-        // 데이터 포맷 맞추기
-        const formatted: SleepRecord[] = res.data
+        const email = getUserEmail();
+        if (!email) {
+          console.error("Email not found in jwt");
+          return;
+        }
+        //토큰 재발급요청용 
+        const res = await autoRefreshCheck({
+          url: "/sleep/recent",
+          method: "GET",
+          params: {email},
+          credentials: 'include',
+        });
+
+        const formatted: SleepRecord[] = res.data.data
           .map((d: any) => ({
-            date: d.date?.slice(5), // "2025-11-10" → "11-10"
+            date: d.date?.slice(5),
             sleepHours: d.sleepHours ?? 0,
           }))
-          // 타입 명시된 정렬
           .sort(
             (a: SleepRecord, b: SleepRecord) =>
               new Date(a.date).getTime() - new Date(b.date).getTime()
@@ -39,7 +49,7 @@ export default function SleepChart() {
 
         setSleepData(formatted);
       } catch (err) {
-        console.error("❌ 수면 데이터 불러오기 실패:", err);
+        console.error("수면 데이터 불러오기 실패:", err);
       }
     };
 
@@ -47,18 +57,7 @@ export default function SleepChart() {
   }, []);
 
   return (
-    <div
-      style={{
-        background: "#FAF3E0",
-        borderRadius: "20px",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-        height: "280px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "16px 32px",
-      }}
-    >
+    <div className="bg-[#FAF3E0] rounded-2xl shadow-md h-[280px] flex items-center justify-center p-8">
       {sleepData.length > 0 ? (
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
@@ -79,7 +78,7 @@ export default function SleepChart() {
           </BarChart>
         </ResponsiveContainer>
       ) : (
-        <span style={{ color: "#B38252", fontSize: "16px" }}>
+        <span className="text-[#B38252] text-[16px]">
           수면 데이터가 없습니다
         </span>
       )}

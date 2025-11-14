@@ -1,7 +1,7 @@
 import type { ChangeEvent, FormEvent } from "react";
 import { useMemo, useState } from "react";
-import axios from "../../config/setAxios";
-
+// import axios from "../../config/setAxios";
+import {autoRefreshCheck} from "../../utils/TokenUtils";
 
 type CalorieForm = {
 	duration_minutes: number;
@@ -21,13 +21,24 @@ const Calorie = () => {
 	const [formData, setFormData] = useState<CalorieForm>(DEFAULT_FORM_DATA);
 	const [isLoading, setIsLoading] = useState(false);
 	const [prediction, setPrediction] = useState<number | null>(null);
+	const [analysis, setAnalysis] = useState<{ prompt: string; advice: string } | null>(null);
 	
 	const requestPrediction = async (payload: CalorieForm) => {
 		try {
 			setIsLoading(true);
-			const response = await axios.post("api/ai/calorie/predict", payload);
-			setPrediction(response.data?.predicted_calories ?? null);
+			const response = await autoRefreshCheck({
+				url: "api/ai/calorie/predict",
+				method:"POST",
+				data:payload,
+			});
+			const predicted = response.data?.predicted_calories ?? null;
+			setPrediction(predicted);
 			console.log("칼로리 예측 결과:", response.data);
+			
+			if(predicted !== null) {
+				await requestAnalyze();
+			}
+
 		} catch (error) {
 			console.error("칼로리 예측 API 호출 실패:", error);
 			setPrediction(null);
@@ -35,6 +46,20 @@ const Calorie = () => {
 			setIsLoading(false);
 		}
 	};
+
+	const requestAnalyze = async () => {
+		try {
+			const response = await autoRefreshCheck({
+				url: "api/ai/calorie/analyze",
+				method: "POST"
+			});
+			setAnalysis(response.data);
+			console.log("LLM 분석 결과:", response.data);
+		}catch (error){
+			console.error("LLM 분석 API호출 실패", error);
+			setAnalysis(null);
+		}
+	}
 	
 	const activityOptions = useMemo(
 		() => [
@@ -73,7 +98,7 @@ const Calorie = () => {
 	};
 
 	return (
-		<div className="flex min-h-screen items-center justify-center bg-base-100 px-4 py-10 flex flex-col">
+		<div className="min-h-screen bg-base-100 px-4 py-10 flex flex-col items-center overflow-y-auto">
 			<div className="card w-full max-w-3xl bg-base-100 shadow-xl mb-3">
 				<div className="card-body space-y-6">
 					<header className="space-y-2 text-center">
@@ -164,15 +189,21 @@ const Calorie = () => {
 			
 			{prediction !== null && (
 				<div className="card w-full max-w-3xl bg-base-100 shadow-xl">
-					<div className="rounded-lg bg-primary/10 p-3 text-sm m-2">
+					<div className="rounded-lg bg-base-300 p-4 m-3 whitespace-pre-line text-sm leading-relaxed">
 						<strong className="block text-blue-700">예측 결과</strong>
 						<span className="text-base-content/80">예상 소모 칼로리: {prediction} kcal</span>
 					</div>
-					<div className="rounded-lg bg-primary/10 p-3 text-sm m-2">
-						
-					</div>
+					{analysis && (
+						<div className="rounded-lg bg-base-200 p-4 m-3 whitespace-pre-line text-sm leading-relaxed">
+							<h3 className="font-semibold text-gray-800 mb-2">🧠 LLM 운동 분석 결과</h3>
+							<p className="text-gray-700 mb-4">{analysis.advice}</p>
+						</div>
+					)}
 				</div>
 			)}
+				{/* <div className="w-full bg-blue-100 h-[2000px]">
+				sdfsdfs
+				</div> */}
 		</div>
 	);
 };

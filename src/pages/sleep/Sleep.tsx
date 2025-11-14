@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import axios from "../../config/setAxios"
+import { getUserEmail } from "../../utils/getUserEmail";
+import { autoRefreshCheck} from "../../utils/TokenUtils";
 import InputBar from "../../components/InputBar/InputBar";
 import ReportButtonGroup from "../../components/Sleep/ReportButton";
 import ChatMessageBubble from "../../components/ChatMessageBubble";
@@ -12,38 +13,49 @@ interface Message {
 
 export default function SleepChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
-  const userId = "user001";
   const [loading, setLoading] = useState(false);
-  const bottomRef = useRef<HTMLDivElement | null>(null); 
-
-  // 메시지가 변경될 때마다 맨 아래로 자동 스크롤
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const email = getUserEmail();
+  
+  // 자동 스크롤
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // 일반 LLM 대화
+  // ✨ LLM 메시지 전송
   const handleSend = async (data: any) => {
     if (!data.text.trim()) return;
     const userMessage = data.text.trim();
+    const email = getUserEmail();
 
-    // 사용자 메시지 먼저 추가
+    if(!email) {
+      setMessages((prev) => [
+        ...prev,
+        {role : "assistant", content: "로그인이 필요합니다."},
+      ]);
+      return;
+    }
+
     setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
     setLoading(true);
 
     try {
-      const res = await axios.post("/chat/message", {
-        user_id: userId,
-        message: userMessage,
+      const res = await autoRefreshCheck({
+        url: "/chat/message",
+        method: "POST",
+        data: {email, message: userMessage},
       });
 
       const botResponse =
         res.data?.response || "LLM 응답을 가져오지 못했습니다.";
+
       setMessages((prev) => [
         ...prev,
         { role: "assistant", content: botResponse },
       ]);
     } catch (err) {
       console.error("LLM 대화 요청 실패:", err);
+
       setMessages((prev) => [
         ...prev,
         { role: "assistant", content: "서버 연결 중 오류가 발생했습니다." },
@@ -53,7 +65,7 @@ export default function SleepChatPage() {
     }
   };
 
-  // 리포트 결과 받기
+  // ✨ 리포트 버튼 클릭 시
   const handleReport = (type: "daily" | "weekly", content: string) => {
     const title = type === "daily" ? "일간 리포트" : "주간 리포트";
     setMessages((prev) => [
@@ -64,37 +76,18 @@ export default function SleepChatPage() {
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        height: "100vh",
-        background: "#FFFCF6",
-        color: "#000",
-        overflow:"hidden",
-      }}
-    >
-      {/* 채팅 영역 */}
-      <main
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          overflow: "hidden"
-        }}
-      >
-        {/* 대화 내용 */}
+    <div className="flex h-screen bg-[#FFFCF6] text-black overflow-hidden">
+      {/* 메인 영역 */}
+      <main className="flex flex-col flex-1 items-center overflow-hidden">
+        
+        {/* 채팅 메시지 리스트 */}
         <div
-          style={{
-            width:"100%",
-            maxWidth: "1027px",
-            flex: 1,
-            padding: "40px 16px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "12px",
-            overflowY: "auto",
-          }}
+          className="
+            w-full max-w-[1027px] flex-1 
+            px-4 md:px-6 lg:px-8 py-8 
+            flex flex-col gap-3
+            overflow-y-auto
+          "
         >
           {messages.map((msg, idx) => (
             <ChatMessageBubble
@@ -104,27 +97,23 @@ export default function SleepChatPage() {
             />
           ))}
 
-          {loading && <ChatMessageBubble from="ai" text="응답 생성 중..." />}
+          {loading && (
+            <ChatMessageBubble from="ai" text="응답 생성 중..." />
+          )}
 
-          {/* 맨 아래로 스크롤 anchor */}
           <div ref={bottomRef} />
         </div>
 
-        {/* 하단: 리포트 버튼 + 인풋바 */}
+        {/* 하단: 리포트 버튼 + 입력 */}
         <div
-          style={{
-            width: "100%",
-            maxWidth: "1027px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "stretch",
-            padding: "0 0 20px",
-            gap: "12px",
-            boxSizing:"border-box",
-            flexShrink:0,
-          }}
+          className="
+            w-full max-w-[1027px]
+            flex flex-col gap-3
+            pb-5 px-2
+            flex-shrink-0
+          "
         >
-          <ReportButtonGroup userId={userId} onReport={handleReport} />
+          <ReportButtonGroup email={email ?? ""} onReport={handleReport} />
           <InputBar variant="sleep" onSend={handleSend} />
         </div>
       </main>

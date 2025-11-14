@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import axios from "../../config/setAxios";
-import { toast, ToastContainer } from "react-toastify";
+import { toast} from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { getUserEmail } from "../../utils/getUserEmail";
+import { autoRefreshCheck} from "../../utils/TokenUtils";
 
 interface FormModalProps {
   isOpen: boolean;
@@ -41,38 +42,39 @@ export default function FormModal({ isOpen, onClose }: FormModalProps) {
 
   //활동 데이터 저장 + 피로도 예측
   const handleSubmit = async () => {
+    const email = getUserEmail();
+    if (!email){
+      toast.error("로그인 정보가 없습니다.", {
+        position:"top-center",
+        autoClose:2000,
+      });
+      return;
+    }
+  
     try {
       const payload = {
-        userId: "user001",
+        email,
         sleepHours: parseFloat(formData.sleepHours) || 0,
         caffeineMg: parseFloat(formData.caffeineMg) || 0,
         alcoholConsumption: parseFloat(formData.alcoholConsumption) || 0,
         physicalActivityHours: parseFloat(formData.activityHours) || 0,
       };
-
-      console.log("📤 활동 데이터 전송:", payload);
-
+  
       // 활동 데이터 저장
-      const res = await axios.post("/sleep/activities", payload, {
-        headers: { "Content-Type": "application/json" },
+      await autoRefreshCheck({
+        url:"/sleep/activities",
+        method:"POST",
+        data:payload,
+        credentials:"include",
       });
-      console.log("활동 데이터 저장 완료:", res.data);
-
-      // 피로도 예측 호출
-      console.log("피로도 예측 요청...");
-      const predict = await axios.post(
-        `/sleep/activities/predict-fatigue`,
-        null,
-        { params: { userId: "user001" } }
-      );
-      console.log("피로도 예측 결과:", predict.data);
-
-      toast.success("오늘의 활동 데이터가 저장되고 피로도 예측이 완료되었습니다!", {
+  
+      // 저장되면 바로 토스트 띄움 (예측 실패와 관계없음)
+      toast.success("오늘의 활동 데이터가 저장되었습니다!", {
         position: "top-center",
-        autoClose: 2200,
+        autoClose: 2000,
         theme: "colored",
       });
-
+  
       // 입력 초기화
       setFormData({
         sleepHours: "",
@@ -80,13 +82,24 @@ export default function FormModal({ isOpen, onClose }: FormModalProps) {
         alcoholConsumption: "",
         activityHours: "",
       });
-
+  
       onClose();
-
-      // SleepAnalysis 새로고침
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
+  
+  
+      // 피로도 예측은 별도의 try/catch로 분리
+      try {
+        await autoRefreshCheck({
+          url:"/sleep/predict-fatigue",
+          method:"POST",
+          params: {email},
+          credentials: "include",
+        });
+      } catch (err) {
+        console.warn("피로도 예측 실패 (하지만 저장은 성공함):", err);
+      }
+  
+      setTimeout(() => window.location.reload(), 500);
+  
     } catch (err: any) {
       console.error("에러 발생:", err);
       if (err.response?.status === 400) {
@@ -107,9 +120,6 @@ export default function FormModal({ isOpen, onClose }: FormModalProps) {
 
   return (
     <>
-      {/* ToastContainer는 모달 바깥에서도 표시 가능 */}
-      <ToastContainer />
-
       <div
         onClick={handleOutsideClick}
         style={{
