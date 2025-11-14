@@ -9,7 +9,8 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import {autoRefreshCheck} from "../../utils/TokenUtils.js";
+import {autoRefreshCheck} from "../../utils/TokenUtils";
+import { getUserEmail } from "../../utils/getUserEmail";
 
 interface SleepRecord {
   date: string;
@@ -18,18 +19,22 @@ interface SleepRecord {
 
 export default function SleepChart() {
   const [sleepData, setSleepData] = useState<SleepRecord[]>([]);
-  const memberNo = 2;
 
   useEffect(() => {
     const fetchSleepData = async () => {
       try {
-        // const res = await axios.get(`/sleep/recent`, { params: { userId } });
+
+        const email = getUserEmail();
+        if (!email) {
+          console.error("Email not found in jwt");
+          return;
+        }
         //토큰 재발급요청용 
-   
         const res = await autoRefreshCheck({
           url: "/sleep/recent",
           method: "GET",
-          params: { memberNo},
+          params: {email},
+          credentials: 'include',
         });
 
         const formatted: SleepRecord[] = res.data.data
@@ -44,7 +49,7 @@ export default function SleepChart() {
 
         setSleepData(formatted);
       } catch (err) {
-        console.error("❌ 수면 데이터 불러오기 실패:", err);
+        console.error("수면 데이터 불러오기 실패:", err);
       }
     };
 

@@ -4,11 +4,11 @@ import { useState } from "react";
 import { getDailyReport, getWeeklyReport } from "../../services/SleepServices/ReportServices";
 
 type ReportButtonGroupProps = {
-  memberNo: number;
+  email: String;
   onReport: (type: "daily" | "weekly", content: string) => void;
 };
 
-export default function ReportButtonGroup({ memberNo, onReport }: ReportButtonGroupProps) {
+export default function ReportButtonGroup({ email, onReport }: ReportButtonGroupProps) {
   const [loading, setLoading] = useState<"daily" | "weekly" | null>(null);
 
   const handleReport = async (type: "daily" | "weekly") => {
@@ -17,8 +17,8 @@ export default function ReportButtonGroup({ memberNo, onReport }: ReportButtonGr
 
       const response =
         type === "daily"
-          ? await getDailyReport(memberNo)
-          : await getWeeklyReport(memberNo);
+          ? await getDailyReport(email)
+          : await getWeeklyReport(email);
 
       const content =
         response?.report ||
