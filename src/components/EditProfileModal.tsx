@@ -1,24 +1,25 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import axios from "../config/setAxios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { autoRefreshCheck } from "../utils/TokenUtils";
 
 interface EditProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
-  userId: string;
+  userId: string; // email
 }
 
 export default function EditProfileModal({ isOpen, onClose, userId }: EditProfileModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
+
   const [formData, setFormData] = useState({
     password: "",
     newPassword: "",
   });
+
   const [isVerifying, setIsVerifying] = useState(false);
 
-  // ESC 닫기
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -27,7 +28,6 @@ export default function EditProfileModal({ isOpen, onClose, userId }: EditProfil
     return () => window.removeEventListener("keydown", handleEsc);
   }, [onClose]);
 
-  // 모달 바깥 클릭
   const handleOutsideClick = (e: React.MouseEvent) => {
     if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
       onClose();
@@ -36,35 +36,29 @@ export default function EditProfileModal({ isOpen, onClose, userId }: EditProfil
 
   if (!isOpen) return null;
 
-  // 입력값
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 비밀번호 변경
+  // 🔥 비밀번호 변경 (검증 없이 바로 변경)
   const handleSubmit = async () => {
     if (!formData.password || !formData.newPassword) {
-      toast.warn("현재 비밀번호와 새 비밀번호를 입력해주세요.", { position: "top-center" });
+      toast.warn("현재 비밀번호와 새 비밀번호를 모두 입력해주세요.", { position: "top-center" });
       return;
     }
 
     try {
       setIsVerifying(true);
 
-      const verify = await axios.post("/users/verify-password", {
-        email: userId,
-        password: formData.password,
-      });
-
-      if (!verify.data?.valid) {
-        toast.error("현재 비밀번호가 올바르지 않습니다.", { position: "top-center" });
-        setIsVerifying(false);
-        return;
-      }
-
-      await axios.put(`/users/${userId}/update`, {
-        newPassword: formData.newPassword,
+      await autoRefreshCheck({
+        url: "/api/user/password",
+        method: "PATCH",
+        data: {
+          email: userId,
+          oldPassword: formData.password,      // 백엔드에서 현재 비번 체크하려면 존재
+          newPassword: formData.newPassword,
+        },
       });
 
       toast.success("비밀번호가 성공적으로 변경되었습니다.", {
@@ -74,13 +68,13 @@ export default function EditProfileModal({ isOpen, onClose, userId }: EditProfil
       onClose();
       setTimeout(() => window.location.reload(), 700);
     } catch (err) {
-      toast.error("서버 오류가 발생했습니다.", { position: "top-center" });
+      toast.error("비밀번호 변경 중 오류가 발생했습니다.", { position: "top-center" });
     } finally {
       setIsVerifying(false);
     }
   };
 
-  // 회원 탈퇴 토스트
+  // 🔥 회원 탈퇴 토스트
   const showDeleteConfirmToast = (onConfirm: () => void) => {
     toast(
       ({ closeToast }) => (
@@ -119,12 +113,18 @@ export default function EditProfileModal({ isOpen, onClose, userId }: EditProfil
     );
   };
 
-  // 회원 탈퇴 처리
+  // 🔥 회원 탈퇴
   const handleDeleteAccount = () => {
     showDeleteConfirmToast(async () => {
       try {
-        await axios.delete(`/users/${userId}`);
+        await autoRefreshCheck({
+          url: "/api/user/delete",
+          method: "DELETE",
+          data: { email: userId },
+        });
+
         toast.success("회원 탈퇴가 완료되었습니다.", { position: "top-center" });
+
         onClose();
         setTimeout(() => (window.location.href = "/"), 1000);
       } catch (err) {
@@ -145,7 +145,6 @@ export default function EditProfileModal({ isOpen, onClose, userId }: EditProfil
           ref={modalRef}
           className="bg-[#FAF3E0] rounded-2xl shadow-xl w-[420px] p-8 relative flex flex-col items-center"
         >
-          {/* 닫기 버튼 */}
           <button
             onClick={onClose}
             className="absolute top-3 right-4 text-[#B38252] text-3xl font-bold"
@@ -153,12 +152,10 @@ export default function EditProfileModal({ isOpen, onClose, userId }: EditProfil
             ×
           </button>
 
-          {/* 제목 */}
           <h2 className="text-[20px] font-semibold text-[#B38252] mb-6">
             비밀번호 변경
           </h2>
 
-          {/* 입력 필드 */}
           <div className="flex flex-col gap-5 w-full max-w-[320px]">
             <ReadOnlyField label="이메일 (아이디)" value={userId} />
             <InputField
@@ -177,22 +174,16 @@ export default function EditProfileModal({ isOpen, onClose, userId }: EditProfil
             />
           </div>
 
-          {/* 버튼 섹션 */}
           <div className="flex flex-col items-center gap-3 mt-8 w-full">
             <div className="flex gap-3">
-              <button
-                onClick={onClose}
-                className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg font-medium"
-              >
+              <button onClick={onClose} className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg">
                 취소
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={isVerifying}
                 className={`px-4 py-2 rounded-lg font-semibold ${
-                  isVerifying
-                    ? "bg-[#D2B48C]/60 cursor-not-allowed"
-                    : "bg-[#D2B48C] text-black"
+                  isVerifying ? "bg-[#D2B48C]/60" : "bg-[#D2B48C] text-black"
                 }`}
               >
                 {isVerifying ? "변경 중..." : "저장"}
@@ -212,8 +203,7 @@ export default function EditProfileModal({ isOpen, onClose, userId }: EditProfil
   );
 }
 
-/* --------------------- 하위 공용 컴포넌트 --------------------- */
-
+/* --------------------- 공용 컴포넌트 --------------------- */
 function InputField({
   label,
   name,

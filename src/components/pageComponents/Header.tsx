@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { Dumbbell, LogIn, User, Flame, Moon, BarChart3, ClipboardList } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import axios from "../../config/setAxios";
+import {autoRefreshCheck} from "../../utils/TokenUtils";
 
 interface HeaderProps {
   children?: ReactNode;
@@ -8,6 +10,28 @@ interface HeaderProps {
 
 const Header = ({ children }: HeaderProps) => {
   const navigate = useNavigate();
+
+  // 🔥 로그아웃 함수 (axios 요청 + 토큰 삭제 + 화면 이동)
+  const handleLogout = async () => {
+    try {
+      
+      await autoRefreshCheck({
+        url: "/api/logout",
+        method: "POST"
+      })
+
+  
+
+      // 🔥 로컬에서 토큰 삭제
+      localStorage.removeItem("accessToken");
+
+    } catch (err) {
+      console.error("로그아웃 요청 실패:", err);
+    } finally {
+      // 항상 로그인 화면으로 이동
+      window.location.href = "/login";
+    }
+  };
 
   return (
     <div className="drawer drawer-open">
@@ -117,14 +141,14 @@ const Header = ({ children }: HeaderProps) => {
               <button
                 type="button"
                 className="is-drawer-close:tooltip is-drawer-close:tooltip-right"
-                data-tip="로그인"
-                onClick={() => navigate("/login")}
+                data-tip="로그아웃"
+                onClick={handleLogout}
               >
                 <LogIn
                   className="inline-block size-4 my-1.5"
                   strokeWidth={2}
                 />
-                <span className="is-drawer-close:hidden">로그인</span>
+                <span className="is-drawer-close:hidden">로그아웃</span>
               </button>
             </li>
           </ul>

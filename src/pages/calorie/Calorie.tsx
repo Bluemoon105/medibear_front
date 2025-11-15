@@ -1,6 +1,7 @@
 import type { ChangeEvent, FormEvent } from "react";
 import { useMemo, useState } from "react";
-import axios from "../../config/setAxios";
+// import axios from "../../config/setAxios";
+import {autoRefreshCheck} from "../../utils/TokenUtils";
 
 type CalorieForm = {
 	duration_minutes: number;
@@ -25,10 +26,12 @@ const Calorie = () => {
 	const requestPrediction = async (payload: CalorieForm) => {
 		try {
 			setIsLoading(true);
-
-			const response = await axios.post("/api/ai/calorie/predict", payload);
+			const response = await autoRefreshCheck({
+				url: "api/ai/calorie/predict",
+				method:"POST",
+				data:payload,
+			});
 			const predicted = response.data?.predicted_calories ?? null;
-
 			setPrediction(predicted);
 			console.log("칼로리 예측 결과:", response.data);
 			
@@ -47,7 +50,10 @@ const Calorie = () => {
 
 	const requestAnalyze = async () => {
 		try {
-			const response = await axios.post("/api/ai/calorie/analyze");
+			const response = await autoRefreshCheck({
+				url: "api/ai/calorie/analyze",
+				method: "POST"
+			});
 			setAnalysis(response.data);
 			console.log("LLM 분석 결과:", response.data);
 		}catch (error){

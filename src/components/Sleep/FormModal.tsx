@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import axios from "../../config/setAxios";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { getUserEmail } from "../../utils/getUserEmail";
+import { autoRefreshCheck } from "../../utils/TokenUtils";
 
 interface FormModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ export default function FormModal({ isOpen, onClose }: FormModalProps) {
     alcoholConsumption: "",
     activityHours: "",
   });
+
   const modalRef = useRef<HTMLDivElement>(null);
 
   // ESC 닫기
@@ -39,37 +41,49 @@ export default function FormModal({ isOpen, onClose }: FormModalProps) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  //활동 데이터 저장 + 피로도 예측
+  // 활동 데이터 저장 + 피로도 예측
   const handleSubmit = async () => {
+    const email = getUserEmail();
+    if (!email) {
+      toast.error("로그인 정보가 없습니다.", {
+        position: "top-center",
+        autoClose: 2000,
+      });
+      return;
+    }
+
     try {
       const payload = {
-        userId: "user001",
+        email,
         sleepHours: parseFloat(formData.sleepHours) || 0,
         caffeineMg: parseFloat(formData.caffeineMg) || 0,
         alcoholConsumption: parseFloat(formData.alcoholConsumption) || 0,
         physicalActivityHours: parseFloat(formData.activityHours) || 0,
       };
 
-      console.log("활동 데이터 전송:", payload);
-
       // 활동 데이터 저장
-      const res = await axios.post("/sleep/activities", payload, {
-        headers: { "Content-Type": "application/json" },
+      const saveRes = await autoRefreshCheck({
+        url: "/sleep/activities",
+        method: "POST",
+        data: payload,
       });
-      console.log("활동 데이터 저장 완료:", res.data);
 
-      // 피로도 예측 호출
-      console.log("피로도 예측 요청...");
-      const predict = await axios.post(
-        `/sleep/activities/predict-fatigue`,
-        null,
-        { params: { userId: "user001" } }
-      );
-      console.log("피로도 예측 결과:", predict.data);
+      // ⭐ 중복 체크: saveRes.data.message 안에 있음
+      const message = saveRes?.data?.message;
 
-      toast.success("오늘의 활동 데이터가 저장되고 피로도 예측이 완료되었습니다!", {
+      if (typeof message === "string" && message.includes("이미 존재")) {
+        toast.warning("오늘은 이미 활동량이 등록되었습니다.", {
+          position: "top-center",
+          autoClose: 2000,
+          theme: "colored",
+        });
+        return;
+      }
+
+      // 저장 성공 토스트
+      toast.success("오늘의 활동 데이터가 저장되었습니다!", {
         position: "top-center",
-        autoClose: 2200,
+        autoClose: 2000,
         theme: "colored",
       });
 
@@ -83,14 +97,28 @@ export default function FormModal({ isOpen, onClose }: FormModalProps) {
 
       onClose();
 
-      // SleepAnalysis 새로고침
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
+      // 피로도 예측은 별도의 try/catch
+      try {
+        await autoRefreshCheck({
+          url: "/sleep/predict-fatigue",
+          method: "GET",
+          params: { email },
+        });
+      } catch (err) {
+        console.warn("피로도 예측 실패 (하지만 저장은 성공함):", err);
+      }
+
+      setTimeout(() => window.location.reload(), 500);
     } catch (err: any) {
       console.error("에러 발생:", err);
+
+      // TokenUtils에서 throw된 에러는 여기 catch됨
       if (err.response?.status === 400) {
-        toast.warning(err.response.data || "오늘은 이미 활동량이 등록되었습니다.", {
+        const msg =
+          err.response?.data?.message ||
+          "오늘은 이미 활동량이 등록되었습니다.";
+
+        toast.warning(msg, {
           position: "top-center",
           autoClose: 2000,
           theme: "colored",
@@ -107,9 +135,6 @@ export default function FormModal({ isOpen, onClose }: FormModalProps) {
 
   return (
     <>
-      {/* ToastContainer는 모달 바깥에서도 표시 가능 */}
-      <ToastContainer />
-
       <div
         onClick={handleOutsideClick}
         style={{
@@ -178,7 +203,7 @@ export default function FormModal({ isOpen, onClose }: FormModalProps) {
           >
             <InputField label="수면시간 (시간)" name="sleepHours" value={formData.sleepHours} onChange={handleChange} />
             <InputField label="카페인 섭취량 (mg)" name="caffeineMg" value={formData.caffeineMg} onChange={handleChange} />
-            <InputField label="알코올 섭취량 (잔)" name="alcoholConsumption" value={formData.alcoholConsumption} onChange={handleChange} />
+            <InputField label="알코올 섭취량 (mg)" name="alcoholConsumption" value={formData.alcoholConsumption} onChange={handleChange} />
             <InputField label="활동량 (시간)" name="activityHours" value={formData.activityHours} onChange={handleChange} />
           </div>
 

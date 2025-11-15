@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import axios from "../../config/setAxios";
+import { getUserEmail } from "../../utils/getUserEmail";
+import {autoRefreshCheck} from "../../utils/TokenUtils";
 
 export default function SleepInsights() {
   const [fatigueScore, setFatigueScore] = useState<number | null>(null);
   const [sleepQuality, setSleepQuality] = useState<number | null>(null);
   const [conditionLevel, setConditionLevel] = useState<string>("");
   const [recommendedSleep, setRecommendedSleep] = useState<string>("예측 중...");
-  const memberNo = 2;
 
   const conditionEmoji: Record<string, string> = {
     좋음: "😆",
@@ -18,18 +18,29 @@ export default function SleepInsights() {
   useEffect(() => {
     const fetchPredictions = async () => {
       try {
-        const fatigueRes = await axios.get(`/sleep/predict-fatigue`, {
-          params: { memberNo },
-        });
+        const email = getUserEmail();
+        if (!email) {
+          console.error("Email not found in JWT");
+          return;
+        }
+        const fatigueRes = await autoRefreshCheck({
+          url:"/sleep/predict-fatigue",
+          method:"GET",
+          params:{email},
+          credentials: "include",
+        })
 
         const fatigueData = fatigueRes.data?.data;
         setFatigueScore(fatigueData?.predictedFatigueScore ?? null);
         setConditionLevel(fatigueData?.conditionLevel ?? "");
         setSleepQuality(fatigueData?.predictedSleepQuality ?? null);
 
-        const sleepRes = await axios.get(`/sleep/predict-sleephours`, {
-          params: { memberNo },
-        });
+        const sleepRes = await autoRefreshCheck({
+          url:"/sleep/predict-sleephours",
+          method:"GET",
+          params:{email},
+          credentials:"include",
+        })
 
         const sleepData = sleepRes.data?.data;
         setRecommendedSleep(sleepData?.recommendedSleepRange ?? "데이터 없음");
