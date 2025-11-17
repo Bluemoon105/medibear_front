@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { autoRefreshCheck } from "../utils/TokenUtils";
+import { Eye, EyeOff } from "lucide-react";
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -10,7 +11,11 @@ interface EditProfileModalProps {
   userId: string; // email
 }
 
-export default function EditProfileModal({ isOpen, onClose, userId }: EditProfileModalProps) {
+export default function EditProfileModal({
+  isOpen,
+  onClose,
+  userId,
+}: EditProfileModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
 
   const [formData, setFormData] = useState({
@@ -41,10 +46,20 @@ export default function EditProfileModal({ isOpen, onClose, userId }: EditProfil
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 🔥 비밀번호 변경 (검증 없이 바로 변경)
   const handleSubmit = async () => {
+    // 입력값 검증
     if (!formData.password || !formData.newPassword) {
-      toast.warn("현재 비밀번호와 새 비밀번호를 모두 입력해주세요.", { position: "top-center" });
+      toast.warn("현재 비밀번호와 새 비밀번호를 모두 입력해주세요.", {
+        position: "top-center",
+      });
+      return;
+    }
+
+    // 새 비밀번호 길이 검증
+    if (formData.newPassword.length < 8) {
+      toast.error("새 비밀번호는 8자 이상이어야 합니다.", {
+        position: "top-center",
+      });
       return;
     }
 
@@ -56,7 +71,7 @@ export default function EditProfileModal({ isOpen, onClose, userId }: EditProfil
         method: "PATCH",
         data: {
           email: userId,
-          oldPassword: formData.password,      // 백엔드에서 현재 비번 체크하려면 존재
+          oldPassword: formData.password,
           newPassword: formData.newPassword,
         },
       });
@@ -67,14 +82,26 @@ export default function EditProfileModal({ isOpen, onClose, userId }: EditProfil
 
       onClose();
       setTimeout(() => window.location.reload(), 700);
-    } catch (err) {
-      toast.error("비밀번호 변경 중 오류가 발생했습니다.", { position: "top-center" });
+    } catch (err: any) {
+      console.error("비밀번호 변경 오류:", err);
+
+      // 서버 메시지 파싱
+      let msg = "비밀번호 변경 중 오류가 발생했습니다.";
+
+      if (err.response?.data) {
+        const data = err.response.data;
+
+        if (typeof data === "string") msg = data;
+        else if (data.error) msg = data.error;
+        else if (data.message) msg = data.message;
+      }
+
+      toast.error(msg, { position: "top-center" });
     } finally {
       setIsVerifying(false);
     }
   };
 
-  // 🔥 회원 탈퇴 토스트
   const showDeleteConfirmToast = (onConfirm: () => void) => {
     toast(
       ({ closeToast }) => (
@@ -113,7 +140,6 @@ export default function EditProfileModal({ isOpen, onClose, userId }: EditProfil
     );
   };
 
-  // 🔥 회원 탈퇴
   const handleDeleteAccount = () => {
     showDeleteConfirmToast(async () => {
       try {
@@ -123,12 +149,16 @@ export default function EditProfileModal({ isOpen, onClose, userId }: EditProfil
           data: { email: userId },
         });
 
-        toast.success("회원 탈퇴가 완료되었습니다.", { position: "top-center" });
+        toast.success("회원 탈퇴가 완료되었습니다.", {
+          position: "top-center",
+        });
 
         onClose();
         setTimeout(() => (window.location.href = "/"), 1000);
       } catch (err) {
-        toast.error("회원 탈퇴 중 오류가 발생했습니다.", { position: "top-center" });
+        toast.error("회원 탈퇴 중 오류가 발생했습니다.", {
+          position: "top-center",
+        });
       }
     });
   };
@@ -158,6 +188,7 @@ export default function EditProfileModal({ isOpen, onClose, userId }: EditProfil
 
           <div className="flex flex-col gap-5 w-full max-w-[320px]">
             <ReadOnlyField label="이메일 (아이디)" value={userId} />
+
             <InputField
               label="현재 비밀번호"
               name="password"
@@ -165,6 +196,7 @@ export default function EditProfileModal({ isOpen, onClose, userId }: EditProfil
               value={formData.password}
               onChange={handleChange}
             />
+
             <InputField
               label="새 비밀번호"
               name="newPassword"
@@ -203,7 +235,7 @@ export default function EditProfileModal({ isOpen, onClose, userId }: EditProfil
   );
 }
 
-/* --------------------- 공용 컴포넌트 --------------------- */
+/* --------------------- InputField (toggle + blur 방지) --------------------- */
 function InputField({
   label,
   name,
@@ -217,28 +249,52 @@ function InputField({
   type?: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) {
+  const [showPassword, setShowPassword] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+
   return (
     <div className="w-full text-center">
-      <label className="block text-sm font-medium text-[#B38252] mb-1">{label}</label>
-      <input
-        type={type}
-        name={name}
-        value={value}
-        onChange={onChange}
-        className="w-full max-w-[240px] px-3 py-2 border border-[#D2B48C] rounded-lg text-center bg-white"
-      />
+      <label className="block text-sm font-medium text-[#B38252] mb-1">
+        {label}
+      </label>
+
+      <div className="relative w-full max-w-[240px] mx-auto">
+        <input
+          type={showPassword ? "text" : type}
+          name={name}
+          value={value}
+          onChange={onChange}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          className="w-full px-3 py-2 pr-10 border border-[#D2B48C] rounded-lg bg-white text-center"
+        />
+
+        {isFocused && (
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()} // ⭐ input blur 방지
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-[#B38252]"
+          >
+            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
 
+/* --------------------- ReadOnlyField --------------------- */
 function ReadOnlyField({ label, value }: { label: string; value: string }) {
   return (
     <div className="w-full text-center">
-      <label className="block text-sm font-medium text-[#B38252] mb-1">{label}</label>
+      <label className="block text-sm font-medium text-[#B38252] mb-1">
+        {label}
+      </label>
       <input
         value={value}
         readOnly
-        className="w-full max-w-[240px] px-3 py-2 border border-[#D2B48C] rounded-lg text-center bg-gray-100 text-gray-500"
+        className="w-full max-w-[240px] px-3 py-2 border border-[#D2B48C] rounded-lg bg-gray-100 text-gray-500"
       />
     </div>
   );

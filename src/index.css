@@ -31,6 +31,14 @@ body {
   z-index: 99999 !important;
 }
 
+/* 더 강력하게 */
+input::-webkit-inner-spin-button,
+input::-webkit-outer-spin-button,
+input::-ms-reveal,
+input::-ms-clear {
+  display: none !important;
+}
+
 /* html, body, #root {
   margin: 0;
   padding: 0;

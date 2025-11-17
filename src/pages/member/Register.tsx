@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "../../config/setAxios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -14,6 +15,12 @@ export default function Register() {
     agree: false,
   });
 
+  // 비밀번호 toggle + focus 상태
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordCheck, setShowPasswordCheck] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
+  const [passwordCheckFocused, setPasswordCheckFocused] = useState(false);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     setForm((prev) => ({
@@ -25,7 +32,6 @@ export default function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 약관 동의 체크
     if (!form.agree) {
       toast.warning("개인정보 수집에 동의해주세요.", {
         position: "top-center",
@@ -34,7 +40,6 @@ export default function Register() {
       return;
     }
 
-    // 비밀번호 확인
     if (form.password !== form.passwordCheck) {
       toast.error("비밀번호가 일치하지 않습니다.", {
         position: "top-center",
@@ -52,9 +57,7 @@ export default function Register() {
     };
 
     try {
-      await axios.post("/api/signUp", payload, {
-        headers: { "Content-Type": "application/json" },
-      });
+      await axios.post("/api/signUp", payload);
 
       toast.success("회원가입이 완료되었습니다!", {
         position: "top-center",
@@ -69,18 +72,11 @@ export default function Register() {
 
       let message = "회원가입 중 오류가 발생했습니다.";
 
-      // 백엔드 응답 파싱
       if (err.response?.data) {
         const data = err.response.data;
-
-        if (typeof data === "string") {
-          // 서버가 단순 문자열 반환
-          message = data;
-        } else if (typeof data === "object") {
-          // 서버가 JSON 반환
-          if (data.error) message = data.error;        // ⭐ AuthController 형태
-          else if (data.message) message = data.message;
-        }
+        if (typeof data === "string") message = data;
+        else if (data.error) message = data.error;
+        else if (data.message) message = data.message;
       }
 
       toast.error(message, {
@@ -114,10 +110,9 @@ export default function Register() {
         alignItems: "center",
         justifyContent: "center",
         color: "#000",
-        fontFamily: "sans-serif",
       }}
     >
-      <ToastContainer position="top-center" autoClose={2000} theme="colored" />
+      <ToastContainer />
 
       <h1 style={{ fontSize: "28px", fontWeight: 700, marginBottom: "40px" }}>
         MediBear
@@ -155,8 +150,7 @@ export default function Register() {
         <div
           style={{
             display: "flex",
-            gap: "12px",
-            justifyContent: "center",
+            gap: 12,
             width: "100%",
           }}
         >
@@ -176,6 +170,7 @@ export default function Register() {
           >
             남성
           </button>
+
           <button
             type="button"
             onClick={() => setForm((prev) => ({ ...prev, gender: "female" }))}
@@ -194,7 +189,7 @@ export default function Register() {
           </button>
         </div>
 
-        {/* Birthdate */}
+        {/* Birth */}
         <input
           type="date"
           name="birth"
@@ -213,24 +208,73 @@ export default function Register() {
           style={baseInputStyle}
         />
 
-        {/* Password */}
-        <input
-          type="password"
-          name="password"
-          placeholder="비밀번호"
-          value={form.password}
-          onChange={handleChange}
-          style={baseInputStyle}
-        />
+        {/* 🔥 Password */}
+        <div style={{ position: "relative", width: "100%" }}>
+          <input
+            type={showPassword ? "text" : "password"}
+            name="password"
+            placeholder="비밀번호"
+            value={form.password}
+            onChange={handleChange}
+            onFocus={() => setPasswordFocused(true)}
+            onBlur={() => setPasswordFocused(false)}
+            style={{ ...baseInputStyle, paddingRight: "42px" }}
+          />
 
-        <input
-          type="password"
-          name="passwordCheck"
-          placeholder="비밀번호 확인"
-          value={form.passwordCheck}
-          onChange={handleChange}
-          style={baseInputStyle}
-        />
+          {passwordFocused && (
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()} // ⭐ blur 방지
+              onClick={() => setShowPassword((v) => !v)}
+              style={{
+                position: "absolute",
+                right: "12px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "#B38252",
+              }}
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          )}
+        </div>
+
+        {/* 🔥 PasswordCheck */}
+        <div style={{ position: "relative", width: "100%" }}>
+          <input
+            type={showPasswordCheck ? "text" : "password"}
+            name="passwordCheck"
+            placeholder="비밀번호 확인"
+            value={form.passwordCheck}
+            onChange={handleChange}
+            onFocus={() => setPasswordCheckFocused(true)}
+            onBlur={() => setPasswordCheckFocused(false)}
+            style={{ ...baseInputStyle, paddingRight: "42px" }}
+          />
+
+          {passwordCheckFocused && (
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()} // ⭐ blur 방지
+              onClick={() => setShowPasswordCheck((v) => !v)}
+              style={{
+                position: "absolute",
+                right: "12px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "#B38252",
+              }}
+            >
+              {showPasswordCheck ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          )}
+        </div>
 
         {/* Agree */}
         <div
