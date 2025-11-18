@@ -26,8 +26,7 @@ export default function SleepInsights() {
         const fatigueRes = await autoRefreshCheck({
           url:"/sleep/predict-fatigue",
           method:"GET",
-          params:{email},
-          
+          params:{email}
         })
 
         const fatigueData = fatigueRes.data?.data;
@@ -38,8 +37,7 @@ export default function SleepInsights() {
         const sleepRes = await autoRefreshCheck({
           url:"/sleep/predict-sleephours",
           method:"GET",
-          params:{email},
-          
+          params:{email}
         })
 
         const sleepData = sleepRes.data?.data;
@@ -73,7 +71,7 @@ export default function SleepInsights() {
               sleepQuality !== null ? "text-[#B38252]" : "text-gray-400"
             }`}
           >
-            {sleepQuality !== null ? sleepQuality.toFixed(1) : "-"} / 5
+            {sleepQuality !== null ? sleepQuality.toFixed(1) : "-"} / 4
           </p>
         </div>
 

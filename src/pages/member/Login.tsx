@@ -1,20 +1,17 @@
-// import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import DaisyAlert from "../../components/alert/DaisyAlert";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import type { DaisyAlertProps } from "../../types/component/alert/DaisyAlert";
-const Login = () => {
+import { Eye, EyeOff } from "lucide-react";
+
+export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-	const [alertState, setAlertState] = useState<DaisyAlertProps | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [focusPw, setFocusPw] = useState(false);
 
-	const showAlert = (message: string, type: DaisyAlertProps["alertType"]) => {
-		setAlertState({ message, alertType: type });
-		setTimeout(() => {
-			setAlertState(null);
-		}, 3000);
-	}
-
+  /* ------------------------------
+      ⭐ 기존 로그인 로직 그대로 적용
+  --------------------------------*/
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -27,164 +24,232 @@ const Login = () => {
       });
 
       if (!response.ok) {
-				showAlert("로그인에 실패했습니다.", "alert-error");
+        toast.warning("메일 또는 비밀번호를 다시 확인해주세요.", {
+          position: "top-center",
+          autoClose: 2000,
+          theme: "colored",
+        });
         return;
       }
 
       const accessToken = response.headers.get("Authorization");
 
       if (!accessToken) {
-        showAlert("서버 응답이 올바르지 않습니다. 다시 시도해주세요.", "alert-error");
+        toast.error("로그인 실패: 토큰을 받지 못했습니다.", {
+          position: "top-center",
+          autoClose: 2000,
+          theme: "colored",
+        });
         return;
       }
 
       localStorage.setItem("accessToken", accessToken);
-			showAlert("로그인 성공! 환영합니다", "alert-success");
+
+      toast.success("로그인 성공! 환영합니다", {
+        position: "top-center",
+        autoClose: 1500,
+        theme: "colored",
+      });
 
       setTimeout(() => {
         window.location.href = "/exercise";
       }, 1200);
     } catch (err) {
       console.error("❌ 로그인 실패:", err);
-			showAlert("네트워크 오류가 발생했습니다. 다시 시도해주세요.", "alert-error");
+      toast.error("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.", {
+        position: "top-center",
+        autoClose: 2000,
+        theme: "colored",
+      });
     }
   };
 
-  return (
-    <div className="flex min-h-screen items-center justify-center px-4">
+  /* ------------------------------ */
 
-			{alertState && (
-				<DaisyAlert
-					alertType={alertState.alertType}
-					onClose={() => setAlertState(null)}
-					message={alertState.message}
-				/>
-			)}
+  const baseInputStyle: React.CSSProperties = {
+    width: "100%",
+    height: "48px",
+    padding: "0 16px",
+    borderRadius: 10,
+    border: "1px solid #D2B48C",
+    background: "#FFF",
+    fontSize: "14px",
+    outline: "none",
+    color: "#000",
+    boxSizing: "border-box",
+  };
+
+  return (
+    <div
+      style={{
+        height: "100vh",
+        backgroundColor: "#FFFDF8",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "#000",
+      }}
+    >
+      <ToastContainer />
+
+      <h1 style={{ fontSize: "28px", fontWeight: 700, marginBottom: "40px" }}>
+        MediBear
+      </h1>
 
       <form
         onSubmit={handleLogin}
-        className="w-full max-w-sm space-y-6 rounded-xl bg-base-200 p-8 shadow-lg"
+        style={{
+          background: "#FAF3E0",
+          borderRadius: 20,
+          boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+          padding: "40px 48px",
+          width: "380px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "18px",
+        }}
       >
-        <h1 className="text-2xl font-semibold text-center">로그인</h1>
+        <h2 style={{ fontSize: "18px", fontWeight: 600, color: "#B38252" }}>
+          로그인
+        </h2>
 
-        <div className="space-y-0.5 mb-2">
-          <label htmlFor="email" className="text-sm font-medium">
-            이메일
-          </label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            name="email"
-            placeholder="example@domain.com"
-            required
-            className="input input-bordered w-full validator"
-          />
-					<div className="validator-hint">올바른 이메일을 입력해주세요</div>
-        </div>
+        {/* Email */}
+        <input
+          type="email"
+          placeholder="email@domain.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          style={baseInputStyle}
+          required
+        />
 
-        <div className="space-y-0 mb-4">
-          <label htmlFor="password" className="text-sm font-medium">
-            비밀번호
-          </label>
+        {/* Password + Eye Toggle */}
+        <div style={{ position: "relative", width: "100%" }}>
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
+            placeholder="비밀번호"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="비밀번호를 입력하세요"
-						
+            onFocus={() => setFocusPw(true)}
+            onBlur={() => setFocusPw(false)}
+            style={{ ...baseInputStyle, paddingRight: "42px" }}
             required
-            className="input w-full validator"
-						title="8자 이상, 숫자, 소문자, 대문자, 특수문자를 모두 포함해야 합니다."
-						// pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{8,}"
           />
-					
-						<p className="validator-hint">
-							8자 이상이어야 합니다.
-						</p>
-					
+
+          {/* ⭐ focus일 때만 보이는 toggle */}
+          {focusPw && (
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()} // blur 방지
+              onClick={() => setShowPassword((v) => !v)}
+              style={{
+                position: "absolute",
+                right: "12px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "#B38252",
+              }}
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          )}
         </div>
 
-        <div className="flex flex-col">
-          <button type="submit" className="btn btn-primary w-full">
-            로그인
-          </button>
+        {/* 로그인 버튼 */}
+        <button
+          type="submit"
+          style={{
+            width: "100%",
+            height: "48px",
+            borderRadius: "999px",
+            background: "#D2B48C",
+            color: "#000",
+            fontWeight: 600,
+            fontSize: "15px",
+            border: "none",
+            cursor: "pointer",
+            marginTop: "8px",
+          }}
+        >
+          로그인
+        </button>
 
-          <div className="divider">OR</div>
-
-          {/* Kakao */}
-          <button className="btn bg-[#FEE502] text-[#181600] border-[#f1d800] mb-2">
-            <svg
-              aria-label="Kakao logo"
-              width="16"
-              height="16"
-              viewBox="0 0 512 512"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                fill="#181600"
-                d="M255.5 48C299.345 48 339.897 56.5332 377.156 73.5996C414.415 90.666 443.871 113.873 465.522 143.22C487.174 172.566 498 204.577 498 239.252C498 273.926 487.174 305.982 465.522 335.42C443.871 364.857 414.46 388.109 377.291 405.175C340.122 422.241 299.525 430.775 255.5 430.775C241.607 430.775 227.262 429.781 212.467 427.795C148.233 472.402 114.042 494.977 109.892 495.518C107.907 496.241 106.012 496.15 104.208 495.248C103.486 494.706 102.945 493.983 102.584 493.08C102.223 492.177 102.043 491.365 102.043 490.642V489.559C103.126 482.515 111.335 453.169 126.672 401.518C91.8486 384.181 64.1974 361.2 43.7185 332.575C23.2395 303.951 13 272.843 13 239.252C13 204.577 23.8259 172.566 45.4777 143.22C67.1295 113.873 96.5849 90.666 133.844 73.5996C171.103 56.5332 211.655 48 255.5 48Z"
-              ></path>
-            </svg>
-            카카오 로그인
-          </button>
-
-          {/* Google */}
-          <button className="btn bg-white text-black border-[#e5e5e5] mb-2">
-            <svg
-              aria-label="Google logo"
-              width="16"
-              height="16"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 512 512"
-            >
-              <g>
-                <path d="m0 0H512V512H0" fill="#fff"></path>
-                <path
-                  fill="#34a853"
-                  d="M153 292c30 82 118 95 171 60h62v48A192 192 0 0190 341"
-                ></path>
-                <path
-                  fill="#4285f4"
-                  d="m386 400a140 175 0 0053-179H260v74h102q-7 37-38 57"
-                ></path>
-                <path
-                  fill="#fbbc02"
-                  d="m90 341a208 200 0 010-171l63 49q-12 37 0 73"
-                ></path>
-                <path
-                  fill="#ea4335"
-                  d="m153 219c22-69 116-109 179-50l55-54c-78-75-230-72-297 55"
-                ></path>
-              </g>
-            </svg>
-            Google 로그인
-          </button>
-
-          {/* Facebook */}
-          <button className="btn bg-[#1A77F2] text-white border-[#005fd8]">
-            <svg
-              aria-label="Facebook logo"
-              width="16"
-              height="16"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 32 32"
-            >
-              <path
-                fill="white"
-                d="M8 12h5V8c0-6 4-7 11-6v5c-4 0-5 0-5 3v2h5l-1 6h-4v12h-6V18H8z"
-              ></path>
-            </svg>
-            Facebook 로그인
-          </button>
+        {/* Divider */}
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            margin: "8px 0",
+          }}
+        >
+          <span style={{ flex: 1, height: "1px", background: "#D2B48C" }} />
+          <span style={{ fontSize: "12px", color: "#555" }}>OR</span>
+          <span style={{ flex: 1, height: "1px", background: "#D2B48C" }} />
         </div>
 
-        <p className="text-center text-sm text-base-content/70">
-          계정이 없으신가요? <a href="/register" className="link">회원가입</a>
+        {/* SNS 로그인 */}
+        <button
+          type="button"
+          style={{
+            width: "100%",
+            height: "48px",
+            borderRadius: "999px",
+            background: "#FEE502",
+            border: "1px solid #f1d800",
+            color: "#181600",
+            fontWeight: 600,
+            cursor: "pointer",
+          }}
+        >
+          카카오 로그인
+        </button>
+
+        <button
+          type="button"
+          style={{
+            width: "100%",
+            height: "48px",
+            borderRadius: "999px",
+            background: "#FFF",
+            border: "1px solid #e5e5e5",
+            color: "#000",
+            fontWeight: 600,
+            cursor: "pointer",
+          }}
+        >
+          Google 로그인
+        </button>
+
+        <button
+          type="button"
+          style={{
+            width: "100%",
+            height: "48px",
+            borderRadius: "999px",
+            background: "#1A77F2",
+            border: "1px solid #005fd8",
+            color: "#FFF",
+            fontWeight: 600,
+            cursor: "pointer",
+          }}
+        >
+          Facebook 로그인
+        </button>
+
+        <p style={{ fontSize: "13px", marginTop: "10px" }}>
+          계정이 없으신가요?{" "}
+          <a href="/register" style={{ color: "#B38252", textDecoration: "underline" }}>
+            회원가입
+          </a>
         </p>
       </form>
     </div>
   );
-};
-
-export default Login;
+}
