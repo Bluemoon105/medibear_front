@@ -22,7 +22,7 @@ export default function SleepChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // ✨ LLM 메시지 전송
+  // LLM 메시지 전송
   const handleSend = async (text: string) => {
   const trimmed = text.trim();
   if (!trimmed) return;
@@ -77,7 +77,7 @@ export default function SleepChatPage() {
   return (
     <ChatLayout>
       <MessageList messages={messages} loading={loading} bottomRef={bottomRef} />
-      <ReportButtonGroup email={email} onReport={handleReport} />
+      <ReportButtonGroup email={email ?? ""} onReport={handleReport} />
       <ChatInputBar onSend={handleSend}/>
     </ChatLayout>
   )

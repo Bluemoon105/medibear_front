@@ -73,7 +73,6 @@ export default function FormModal({ isOpen, onClose }: FormModalProps) {
       // message 해석 (autoRefreshCheck 구조 대응)
       const message = saveRes?.data?.message;
 
-
       // 이미 존재하는 경우
       if (typeof message === "string" && message.includes("이미")) {
         toast.warning("오늘은 이미 활동량이 등록되었습니다.", {
