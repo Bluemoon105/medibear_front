@@ -4,7 +4,7 @@ import { useState } from "react";
 import { getDailyReport, getWeeklyReport } from "../../services/SleepServices/ReportServices";
 
 type ReportButtonGroupProps = {
-  email: string;
+  email: string | null;
   onReport: (type: "daily" | "weekly", content: string) => void;
 };
 

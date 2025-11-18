@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Send } from "lucide-react";
+import { Send, Plus } from "lucide-react"; // ★ Plus 추가 (아이콘 통일)
 import { flushSync } from "react-dom";
 
 type Props = {
@@ -9,7 +9,7 @@ type Props = {
 export default function ChatInputBar({ onSend }: Props) {
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
-  const [isComposing, setIsComposing] = useState(false); // ★ 한글 조합중 여부
+  const [isComposing, setIsComposing] = useState(false);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -27,10 +27,7 @@ export default function ChatInputBar({ onSend }: Props) {
 
     setSending(true);
 
-    // ★ 한글 조합 상태 강제 종료 + 안전하게 초기화
-    flushSync(() => {
-      setText("");
-    });
+    flushSync(() => setText(""));
 
     await onSend(trimmed);
 
@@ -39,9 +36,7 @@ export default function ChatInputBar({ onSend }: Props) {
 
   // Enter 처리
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // 한글 조합중이면 Enter는 전송이 아니라 조합 완료 역할이라 막기
     if (isComposing) return;
-
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -49,41 +44,59 @@ export default function ChatInputBar({ onSend }: Props) {
   };
 
   return (
-    <div className="w-full max-w-[1027px] flex justify-center px-4 pb-4">
+    <div className="w-full max-w-[1027px] mx-auto px-4 pb-4">
       <div
         className="
-        	w-full flex items-center gap-3 
-        	bg-base-100 border border-gray-300 shadow-sm
-        	px-4 py-3 rounded-full
+          relative flex items-center gap-3
+          bg-white border border-gray-300 px-4 py-3 rounded-full
         "
       >
+        {/* + 버튼 (첫 번째 컴포넌트 UI와 동일 스타일) */}
+        <div className="dropdown dropdown-top">
+          <div
+            tabIndex={0}
+            role="button"
+            className="btn btn-ghost btn-sm rounded-full"
+          >
+            <Plus size={20} />
+          </div>
+
+          <ul
+            tabIndex={-1}
+            className="dropdown-content menu bg-base-100 rounded-box w-40 p-2 shadow"
+          >
+            <li>
+              <a>📁 기능 1</a>
+            </li>
+            <li>
+              <a>📄 기능 2</a>
+            </li>
+          </ul>
+        </div>
+
         {/* 입력창 */}
         <textarea
           ref={textareaRef}
           placeholder="메시지를 입력하세요..."
           value={text}
           onChange={(e) => setText(e.target.value)}
-          
-          // ★ 한글 조합 시작 / 종료 이벤트
           onCompositionStart={() => setIsComposing(true)}
           onCompositionEnd={() => setIsComposing(false)}
-
           onKeyDown={handleKeyDown}
           rows={1}
           className="
-            flex-1 bg-transparent focus:outline-none
-            resize-none text-[15px] leading-[1.5]
+            flex-1 bg-transparent resize-none 
+            focus:outline-none text-[15px] leading-[1.5]
             max-h-[160px] overflow-y-auto
           "
         />
 
-        {/* 전송 버튼 */}
+        {/* 전송 버튼 (첫 번째 컴포넌트 스타일 적용) */}
         <button
           onClick={handleSend}
           disabled={sending}
           className="
-            btn btn-circle btn-sm 
-            bg-primary text-white border-none
+            btn btn-circle btn-sm bg-primary text-white border-none
             hover:bg-primary/80
           "
         >

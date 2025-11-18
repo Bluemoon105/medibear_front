@@ -10,14 +10,14 @@ import ExerciseChat from "../pages/exercise/ExerciseChat";
 import Sleep from "../pages/sleep/Sleep"
 import SleepPredict from "../pages/sleep/SleepPredict"
 import StressReportPage from "../pages/stress/StressReportPage";
-
+import ExerciseTest from "../pages/exercise/ExerciseTest";
 const Router = () => {
 	return (
 		<BrowserRouter>
 			<Routes>
 				<Route element={<MainLayout/>}>
 					<Route path="exercise" element={<ExerciseChat/>}/>
-					
+					<Route path="exercise/test" element={<ExerciseTest/>}/>
 					<Route path="/sleep" element={<Sleep/>} />
 					<Route path="/sleepPredict" element={<SleepPredict />} />
 
