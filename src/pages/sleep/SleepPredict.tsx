@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import SleepChart from "../../components/Sleep/SleepChart";
 import SleepInsights from "../../components/Sleep/SleepInsights";

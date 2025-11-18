@@ -1,11 +1,19 @@
 // import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
+import DaisyAlert from "../../components/alert/DaisyAlert";
 import "react-toastify/dist/ReactToastify.css";
-
+import type { DaisyAlertProps } from "../../types/component/alert/DaisyAlert";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+	const [alertState, setAlertState] = useState<DaisyAlertProps | null>(null);
+
+	const showAlert = (message: string, type: DaisyAlertProps["alertType"]) => {
+		setAlertState({ message, alertType: type });
+		setTimeout(() => {
+			setAlertState(null);
+		}, 3000);
+	}
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,58 +27,47 @@ const Login = () => {
       });
 
       if (!response.ok) {
-        toast.warning("메일 또는 비밀번호를 다시 확인해주세요.", {
-          position: "top-center",
-          autoClose: 2000,
-          theme: "colored",
-        });
+				showAlert("로그인에 실패했습니다.", "alert-error");
         return;
       }
 
       const accessToken = response.headers.get("Authorization");
 
       if (!accessToken) {
-        toast.error("로그인 실패: 토큰을 받지 못했습니다.", {
-          position: "top-center",
-          autoClose: 2000,
-          theme: "colored",
-        });
+        showAlert("서버 응답이 올바르지 않습니다. 다시 시도해주세요.", "alert-error");
         return;
       }
 
       localStorage.setItem("accessToken", accessToken);
-
-      toast.success("로그인 성공! 환영합니다", {
-        position: "top-center",
-        autoClose: 1500,
-        theme: "colored",
-      });
+			showAlert("로그인 성공! 환영합니다", "alert-success");
 
       setTimeout(() => {
         window.location.href = "/exercise";
       }, 1200);
     } catch (err) {
       console.error("❌ 로그인 실패:", err);
-      toast.error("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.", {
-        position: "top-center",
-        autoClose: 2000,
-        theme: "colored",
-      });
+			showAlert("네트워크 오류가 발생했습니다. 다시 시도해주세요.", "alert-error");
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-base-200 px-4">
-      {/* ✅ ToastContainer 추가됨 */}
-      <ToastContainer position="top-center" theme="colored" style={{ zIndex: 999999 }} />
+    <div className="flex min-h-screen items-center justify-center px-4">
+
+			{alertState && (
+				<DaisyAlert
+					alertType={alertState.alertType}
+					onClose={() => setAlertState(null)}
+					message={alertState.message}
+				/>
+			)}
 
       <form
         onSubmit={handleLogin}
-        className="w-full max-w-sm space-y-6 rounded-xl bg-base-100 p-8 shadow-lg"
+        className="w-full max-w-sm space-y-6 rounded-xl bg-base-200 p-8 shadow-lg"
       >
         <h1 className="text-2xl font-semibold text-center">로그인</h1>
 
-        <div className="space-y-2">
+        <div className="space-y-0.5 mb-2">
           <label htmlFor="email" className="text-sm font-medium">
             이메일
           </label>
@@ -81,11 +78,12 @@ const Login = () => {
             name="email"
             placeholder="example@domain.com"
             required
-            className="input input-bordered w-full"
+            className="input input-bordered w-full validator"
           />
+					<div className="validator-hint">올바른 이메일을 입력해주세요</div>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-0 mb-4">
           <label htmlFor="password" className="text-sm font-medium">
             비밀번호
           </label>
@@ -94,9 +92,17 @@ const Login = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="비밀번호를 입력하세요"
+						
             required
-            className="input input-bordered w-full"
+            className="input w-full validator"
+						title="8자 이상, 숫자, 소문자, 대문자, 특수문자를 모두 포함해야 합니다."
+						// pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{8,}"
           />
+					
+						<p className="validator-hint">
+							8자 이상이어야 합니다.
+						</p>
+					
         </div>
 
         <div className="flex flex-col">

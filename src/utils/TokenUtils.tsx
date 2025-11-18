@@ -1,5 +1,5 @@
 import type { AxiosRequestConfig, AxiosResponse } from "axios";
-import axios from "../config/setAxios"; // axios 인스턴스
+import axios from "../config/axiosJwt"; // axios 인스턴스
 
 type RefreshCallback = (newToken: string | null) => void;
 

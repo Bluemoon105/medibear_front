@@ -1,16 +1,15 @@
 import type { ReactNode } from "react";
-import { Dumbbell, LogIn, User, Flame, Moon, BarChart3, ClipboardList } from "lucide-react";
+import { Dumbbell, LogIn, ScrollText, Flame, Moon, BarChart3, ClipboardList, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import axios from "../../config/setAxios";
 import {autoRefreshCheck} from "../../utils/TokenUtils";
-
+import logo from "../../assets/react.svg";
 interface HeaderProps {
   children?: ReactNode;
 }
 
 const Header = ({ children }: HeaderProps) => {
   const navigate = useNavigate();
-
+  const LogoImg = logo;
   // 🔥 로그아웃 함수 (axios 요청 + 토큰 삭제 + 화면 이동)
   const handleLogout = async () => {
     try {
@@ -20,16 +19,14 @@ const Header = ({ children }: HeaderProps) => {
         method: "POST"
       })
 
-  
-
       // 🔥 로컬에서 토큰 삭제
       localStorage.removeItem("accessToken");
 
     } catch (err) {
       console.error("로그아웃 요청 실패:", err);
     } finally {
-      // 항상 로그인 화면으로 이동
-      window.location.href = "/login";
+      // 메인 화면으로 이동
+      navigate("/")
     }
   };
 
@@ -47,7 +44,25 @@ const Header = ({ children }: HeaderProps) => {
         <div className="is-drawer-close:w-14 is-drawer-open:w-64 bg-base-100 flex flex-col items-start min-h-full">
           {/* ===== Sidebar Menu ===== */}
           <ul className="menu w-full grow">
-            {/* 운동 챗봇 */}
+            <li>
+              <div className="flex items-center justify-center py-3">
+                  {/* Drawer 닫힘: 작은 로고 */}
+                  <img
+                    src={LogoImg}
+                    alt="logo"
+                    className="inline-block w-6 h-6 my-1.5 is-drawer-open:hidden"
+                  />
+
+                  {/* Drawer 열림: 큰 로고 */}
+                  <img
+                    src={LogoImg}
+                    alt="logo"
+                    className="w-24 h-auto my-1.5 is-drawer-close:hidden"
+                  />
+                </div>
+            </li>
+
+
             <li>
               <button
                 className="is-drawer-close:tooltip is-drawer-close:tooltip-right"
@@ -127,16 +142,31 @@ const Header = ({ children }: HeaderProps) => {
               <button
                 type="button"
                 className="is-drawer-close:tooltip is-drawer-close:tooltip-right"
-                data-tip="마이페이지"
+                data-tip="마이로그"
                 onClick={() => navigate("/mypage")}
               >
-                <User
+                <ScrollText
                   className="inline-block size-4 my-1.5"
                   strokeWidth={2}
                 />
-                <span className="is-drawer-close:hidden">마이페이지</span>
+                
+                <span className="is-drawer-close:hidden">마이로그</span>
               </button>
             </li>
+
+            <li>
+              <button
+                type="button"
+                className="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+                data-tip="설정"
+                
+              >
+                <Settings className="inline-block size-4 my-1.5" strokeWidth={2}/>  
+                <span className="is-drawer-close:hidden">설정</span>
+              </button>
+              
+            </li>
+
             <li>
               <button
                 type="button"

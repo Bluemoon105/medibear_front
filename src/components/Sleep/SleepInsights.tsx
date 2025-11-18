@@ -27,7 +27,7 @@ export default function SleepInsights() {
           url:"/sleep/predict-fatigue",
           method:"GET",
           params:{email},
-          credentials: "include",
+          
         })
 
         const fatigueData = fatigueRes.data?.data;
@@ -39,7 +39,7 @@ export default function SleepInsights() {
           url:"/sleep/predict-sleephours",
           method:"GET",
           params:{email},
-          credentials:"include",
+          
         })
 
         const sleepData = sleepRes.data?.data;

@@ -5,7 +5,7 @@ type MediaPayload = {
   base64Video?: string;
 };
 
-export function useExerciseMedia({ onSend }: { onSend: (data: any) => void }) {
+export function useExerciseMedia({ onSend:_onSend }: { onSend: (data: any) => void }) {
   // ✅ 내부에 보관해둘 base64 상태
   const [base64Image, setBase64Image] = useState<string | undefined>();
   const [base64Video, setBase64Video] = useState<string | undefined>();

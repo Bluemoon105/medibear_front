@@ -12,8 +12,6 @@
   --color-accent-content: #000000;         /* 버튼 텍스트 색 */
 }
 
-
-
 body {
 	overflow: hidden;
 }
@@ -31,49 +29,37 @@ body {
   z-index: 99999 !important;
 }
 
-/* html, body, #root {
-  margin: 0;
-  padding: 0;
-  background: #FFFFFF !important;
-  color: #000 !important;
-  height: 100%;
-  width: 100%;
-  font-family: sans-serif;
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+@keyframes fade-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+.animate-fade-in {
+  animation: fade-in 0.25s ease-out forwards;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-} */
+.animate-fade-out {
+  animation: fade-out 0.25s ease-in forwards;
+}
+
+.validator-hint {
+  margin-top: .1rem;
+  margin-left: .2rem;
+}

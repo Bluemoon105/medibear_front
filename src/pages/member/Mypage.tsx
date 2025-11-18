@@ -1,5 +1,5 @@
-import { useState } from "react";
-// import axios from "../../config/setAxios";
+import { useState, useEffect } from "react";
+
 import {
   LineChart,
   Line,
@@ -11,63 +11,89 @@ import {
 } from "recharts";
 import { useNavigate } from "react-router-dom";
 import EditProfileModal from "../../components/EditProfileModal";
-import { getUserEmail } from "../../utils/getUserEmail";  // 🔥 추가
-import { toast } from "react-toastify";                  // 🔥 추가
+import { getUserEmail } from "../../utils/getUserEmail";
+import { toast } from "react-toastify";
+import { autoRefreshCheck } from "../../utils/TokenUtils";
 
-type UserProfile = {
-  name: string;
-  height_cm: number;
-  weight_kg: number;
+type ProfileDto = {
+  heightCm: number;
+  weightKg: number;
   bmi: number;
 };
 
-type CalorieLog = {
-  name: string;
+type CalorieChartItem = {
+  date: string;
   calories: number;
-  activity_type: string;
-  analysis: string;
+};
+
+type FitnessLogItem = {
+  date: string;
+  activityType: string;
+  durationMinutes: number;
+  caloriesBurned: number;
+};
+
+type MyLogCalorieResponse = {
+  profile: ProfileDto;
+  calorieChart: CalorieChartItem[];
+  fitnessLogs: FitnessLogItem[];
+  summary: string;
 };
 
 const MyPage = () => {
   const navigate = useNavigate();
-
-  // 🔥 로그인한 사용자 이메일을 토큰에서 가져옴
   const userEmail = getUserEmail() ?? "";
 
-  // 🔥 로그인 정보 체크 (토큰이 없거나 만료 시 토스트 표시)
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [data, setData] = useState<MyLogCalorieResponse | null>(null);
+
+  // =============================================
+  // 🔥 autoRefreshCheck 를 이용한 마이로그 데이터 호출
+  // =============================================
+  const fetchMyLog = async () => {
+    try {
+      const res = await autoRefreshCheck({
+        url: "/api/mylog/calorie",
+        method: "GET",
+        withCredentials: true,
+      });
+
+      setData(res.data);
+      console.log("🔥 MyLog API 응답:", res.data);
+    } catch (err) {
+      console.error("❌ MyLog 조회 실패:", err);
+      toast.error("사용자 기록을 불러오지 못했습니다");
+    }
+  };
+
+  // 🔥 로그인 체크 + API 호출
   useEffect(() => {
     if (!userEmail) {
-      toast.error("로그인 정보가 없습니다. 다시 로그인해주세요.", {
-        position: "top-center",
-        autoClose: 2000,
-      });
+      toast.error("로그인 정보가 없습니다. 다시 로그인해주세요.");
+      return;
     }
-  }, [userEmail]);
+    fetchMyLog();
+  }, []);
 
-  const [profile, setProfile] = useState<UserProfile>({
-    name: "홍길동",
-    height_cm: 170,
-    weight_kg: 70,
-    bmi: 23,
-  });
+  // 🔥 로딩 화면
+  if (!data) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center text-lg">
+        로딩 중...
+      </div>
+    );
+  }
 
-  const [logs] = useState<CalorieLog[]>([
-    { name: "11/07", activity_type: "Running", calories: 420, analysis: "지속적인 유산소로 체력 향상" },
-    { name: "11/08", activity_type: "Cycling", calories: 510, analysis: "하체 강화에 효과적" },
-    { name: "11/09", activity_type: "Yoga", calories: 480, analysis: "유연성과 안정성 향상" },
-    { name: "11/10", activity_type: "Tennis", calories: 560, analysis: "전신 근육 사용" },
-    { name: "11/11", activity_type: "HIIT", calories: 600, analysis: "체지방 감소 효과" },
-    { name: "11/12", activity_type: "Walking", calories: 530, analysis: "꾸준한 활동으로 컨디션 유지" },
-    { name: "11/13", activity_type: "Swimming", calories: 580, analysis: "심폐 기능 강화" },
-  ]);
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // =============================================
+  // 🔥 데이터 구조 분해
+  // =============================================
+  const { profile, calorieChart, fitnessLogs, summary } = data;
 
   return (
     <div className="min-h-screen bg-base-100 flex flex-col items-center px-6 py-10">
       
       <h1 className="text-3xl font-bold text-neutral-800 mb-4 text-center">
-        내 건강 리포트 대시보드
+        마이로그
       </h1>
       <p className="text-center text-neutral-500 mb-10">
         신체 정보, 운동 통계, 스트레스 및 수면 분석을 한눈에 확인하세요.
@@ -79,12 +105,12 @@ const MyPage = () => {
         {/* ===== 왼쪽 섹션 ===== */}
         <div className="space-y-8">
 
-          {/* 신체 정보 */}
+          {/* 🔥 신체 정보 */}
           <section className="flex flex-wrap justify-center gap-6">
             {[ 
-              { title: "키", value: `${profile.height_cm} cm` },
-              { title: "몸무게", value: `${profile.weight_kg} kg` },
-              { title: "BMI", value: `${profile.bmi}` },
+              { title: "키", value: `${profile.heightCm} cm` },
+              { title: "몸무게", value: `${profile.weightKg} kg` },
+              { title: "BMI", value: `${profile.bmi.toFixed(1)}` },
             ].map((item) => (
               <div
                 key={item.title}
@@ -96,16 +122,17 @@ const MyPage = () => {
             ))}
           </section>
 
-          {/* 칼로리 차트 */}
+          {/* 🔥 최근 7일 칼로리 그래프 */}
           <section className="bg-base-200 shadow-md rounded-3xl p-6 border border-base-300">
             <h2 className="text-lg font-semibold text-neutral-700 mb-4 text-center">
               📈 최근 7일간 칼로리 소모량
             </h2>
+
             <div className="w-full h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={logs}>
+                <LineChart data={calorieChart}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5ddd5" />
-                  <XAxis dataKey="name" stroke="#7a6f66" />
+                  <XAxis dataKey="date" stroke="#7a6f66" />
                   <YAxis stroke="#7a6f66" />
                   <Tooltip
                     contentStyle={{
@@ -127,54 +154,53 @@ const MyPage = () => {
             </div>
           </section>
 
-          {/* 운동 기록 테이블 */}
-          <section className="bg-base-200 shadow-md rounded-3xl p-6 border border-base-300">
+          {/* 🔥 운동 기록 테이블 */}
+          <section className="bg-base-100 shadow-md rounded-3xl p-6 border border-base-300">
             <h2 className="text-lg font-semibold text-neutral-700 mb-4 text-center">
               🏋️ 운동 기록 & 분석 요약
             </h2>
+
             <div className="overflow-x-auto">
               <table className="table table-zebra w-full">
                 <thead>
                   <tr className="text-neutral-600">
                     <th>날짜</th>
                     <th>운동 종류</th>
-                    <th>칼로리</th>
-                    <th>분석</th>
+                    <th>운동 시간</th>
+                    <th>칼로리 소모</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {logs.map((log, i) => (
+                  {fitnessLogs.map((log, i) => (
                     <tr key={i} className="hover:bg-base-100 transition">
-                      <td>{log.name}</td>
-                      <td>{log.activity_type}</td>
-                      <td>{log.calories} kcal</td>
-                      <td className="text-sm text-neutral-600">{log.analysis}</td>
+                      <td>{log.date}</td>
+                      <td>{log.activityType}</td>
+                      <td>{log.durationMinutes}분</td>
+                      <td>{log.caloriesBurned} kcal</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* 🔥 요약문 */}
+            <div className="mt-6 p-4 bg-base-200 rounded-xl text-neutral-700 leading-relaxed text-sm">
+              <h3 className="font-semibold mb-2">📝 최근 7일 분석 요약</h3>
+              {summary}
             </div>
           </section>
         </div>
 
         {/* ===== 오른쪽 섹션 ===== */}
         <div className="space-y-8">
-          
-          {/* 스트레스 리포트 */}
+
+          {/* 스트레스 분석 (임시) */}
           <section className="bg-info/10 rounded-3xl shadow-md p-6 border border-info/30">
             <h2 className="text-lg font-semibold text-neutral-700 mb-4 text-center">
               💭 스트레스 분석 리포트
             </h2>
             <p className="text-neutral-600 leading-relaxed text-sm">
-              지난 일주일 동안의 스트레스 상태를 분석했습니다.
-              <br /><br />
-              😌 <strong>평균 스트레스 지수: 36%</strong>
-              <br />
-              🔵 가장 안정된 날: 11/09 (Yoga 세션)
-              <br />
-              🔴 가장 피로한 날: 11/11 (HIIT 운동)
-              <br /><br />
-              꾸준한 수면 관리와 규칙적인 유산소 운동이 스트레스 완화에 도움이 됩니다.
+              스트레스 분석 기능은 곧 업데이트 예정입니다.
             </p>
           </section>
 
@@ -206,10 +232,12 @@ const MyPage = () => {
         >
           회원 정보 수정
         </button>
-        <p className="text-sm text-neutral-400">최근 업데이트: 2025-11-13</p>
+        <p className="text-sm text-neutral-400">
+          최근 업데이트: {new Date().toLocaleDateString()}
+        </p>
       </div>
 
-      {/* 🔥 모달 렌더 */}
+      {/* 🔥 모달 */}
       <EditProfileModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

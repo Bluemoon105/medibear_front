@@ -1,16 +1,13 @@
 import { useState } from "react";
-import axios from "axios";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // const handleLogin = (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   console.log("로그인 시도:", { email, password });
-  // };
-
-  
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("로그인 시도:", { email, password });
+  };
 
   return (
     <div

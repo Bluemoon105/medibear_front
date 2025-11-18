@@ -23,7 +23,8 @@
     "react-toastify": "^11.0.5",
     "recharts": "^3.4.1",
     "redux-persist": "^6.0.0",
-    "tailwindcss": "^4.1.16"
+    "tailwindcss": "^4.1.16",
+    "typeit": "^8.8.7"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
