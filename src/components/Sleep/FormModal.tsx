@@ -71,7 +71,7 @@ export default function FormModal({ isOpen, onClose }: FormModalProps) {
       });
 
       // message 해석 (autoRefreshCheck 구조 대응)
-      const message = saveRes?.message || saveRes?.data?.message;
+      const message = saveRes?.data?.message;
 
       // 이미 존재하는 경우
       if (typeof message === "string" && message.includes("이미")) {

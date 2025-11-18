@@ -77,7 +77,7 @@ export default function SleepChatPage() {
   return (
     <ChatLayout>
       <MessageList messages={messages} loading={loading} bottomRef={bottomRef} />
-      <ReportButtonGroup email={email} onReport={handleReport} />
+      <ReportButtonGroup email={email ?? ""} onReport={handleReport} />
       <ChatInputBar onSend={handleSend}/>
     </ChatLayout>
   )
