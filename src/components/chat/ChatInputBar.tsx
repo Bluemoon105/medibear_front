@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Send, Plus } from "lucide-react";
 import { flushSync } from "react-dom";
 
