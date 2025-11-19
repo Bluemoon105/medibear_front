@@ -24,7 +24,7 @@ export default function ChatInputBar({ onSend }: Props) {
     base64Image,
     base64Video,
     handleImageUpload,
-
+    handleVideoUpload,
     startWebcam,
     stopWebcam,
     startRecording,
@@ -75,10 +75,11 @@ export default function ChatInputBar({ onSend }: Props) {
       {(base64Image || base64Video) && (
         <div className="mb-3 flex justify-start">
           <div className="relative bg-base-100 border border-base-300 shadow-md rounded-xl p-2 max-w-[240px]">
-            
+
             {/* 이미지 프리뷰 */}
             {base64Image && (
               <img
+                key={base64Image}        // ★ 이미지 리렌더 보장
                 src={base64Image}
                 className="rounded-lg max-h-[200px] object-cover"
               />
@@ -87,6 +88,7 @@ export default function ChatInputBar({ onSend }: Props) {
             {/* 비디오 프리뷰 */}
             {base64Video && (
               <video
+                key={base64Video}        // ★ 영상 리렌더 보장 (핵심)
                 src={base64Video}
                 controls
                 className="rounded-lg max-h-[200px]"
@@ -123,12 +125,13 @@ export default function ChatInputBar({ onSend }: Props) {
 
           <ul
             tabIndex={-1}
-            className="dropdown-content menu bg-base-100 rounded-box w-40 p-2 shadow"
+            className="dropdown-content menu bg-base-100 rounded-box w-48 p-2 shadow"
           >
+
             {/* 이미지 선택 */}
             <li>
               <label className="cursor-pointer">
-                <span>📷 이미지 선택</span>
+                <span>📸 이미지 선택</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -138,17 +141,31 @@ export default function ChatInputBar({ onSend }: Props) {
               </label>
             </li>
 
-            {/* 영상 선택 → 웹캠 모달 */}
+            {/* 동영상 선택 */}
+            <li>
+              <label className="cursor-pointer">
+                <span>🎥 동영상 선택</span>
+                <input
+                  type="file"
+                  accept="video/*"
+                  className="hidden"
+                  onChange={handleVideoUpload}
+                />
+              </label>
+            </li>
+
+            {/* 웹캠 녹화 */}
             <li>
               <a
                 onClick={() =>
                   (document.getElementById("modal_webcam") as HTMLDialogElement)?.showModal()
                 }
               >
-                🎥 영상 촬영(웹캠)
+                🎬 영상 촬영(웹캠)
               </a>
             </li>
           </ul>
+
         </div>
 
         {/* textarea */}
