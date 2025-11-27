@@ -43,6 +43,8 @@
 
 ### 임예지
 
+## React – Sleep Service 연동 기능 개발 내역
+
 ### 1. 수면 입력 UI(FormModal) 연동
 - 사용자가 입력한 sleepHours, caffeineMg, activityLevel 등을 Spring Boot로 전달
 - 입력 필드 구조 및 API 요청 스펙 협의·정의
