@@ -6,11 +6,9 @@ import Calorie from "../pages/calorie/Calorie";
 import Mypage from "../pages/member/Mypage";
 import Login from "../pages/member/Login";
 import Register from "../pages/member/Register";
-import ExerciseChat from "../pages/exercise/ExerciseChat";
 import Sleep from "../pages/sleep/Sleep"
 import SleepPredict from "../pages/sleep/SleepPredict"
 import StressReportPage from "../pages/stress/StressReportPage";
-import ExerciseTest from "../pages/exercise/ExerciseTest";
 const Router = () => {
 	return (
 		<BrowserRouter>
