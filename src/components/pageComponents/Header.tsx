@@ -62,21 +62,6 @@ const Header = ({ children }: HeaderProps) => {
                 </div>
             </li>
 
-
-            <li>
-              <button
-                className="is-drawer-close:tooltip is-drawer-close:tooltip-right"
-                data-tip="운동챗"
-                onClick={() => navigate("/exercise")}
-              >
-                <Dumbbell
-                  className="inline-block size-4 my-1.5"
-                  strokeWidth={2}
-                />
-                <span className="is-drawer-close:hidden">운동</span>
-              </button>
-            </li>
-
             {/* 수면 챗봇 */}
             <li>
               <button
