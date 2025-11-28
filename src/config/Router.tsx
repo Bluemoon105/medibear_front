@@ -16,8 +16,6 @@ const Router = () => {
 		<BrowserRouter>
 			<Routes>
 				<Route element={<MainLayout/>}>
-					<Route path="exercise" element={<ExerciseChat/>}/>
-					<Route path="exercise/test" element={<ExerciseTest/>}/>
 					<Route path="/sleep" element={<Sleep/>} />
 					<Route path="/sleepPredict" element={<SleepPredict />} />
 
