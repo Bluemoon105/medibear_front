@@ -55,7 +55,7 @@ export default function Login() {
       });
 
       setTimeout(() => {
-        window.location.href = "/exercise";
+        window.location.href = "/sleep";
       }, 1200);
     } catch (err) {
       console.error("❌ 로그인 실패:", err);
